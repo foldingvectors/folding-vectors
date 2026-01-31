@@ -448,18 +448,6 @@ export default function AnalysisPage({ params }: { params: Promise<{ id: string 
           </div>
         )}
 
-        {/* Document Preview */}
-        <div className="mb-8">
-          <h2 className="text-xs uppercase tracking-wider opacity-60 mb-2">
-            Document
-          </h2>
-          <div className="border border-[var(--border)] rounded-md p-4 max-h-48 overflow-y-auto">
-            <pre className="text-sm whitespace-pre-wrap font-mono opacity-80">
-              {analysis.document_text}
-            </pre>
-          </div>
-        </div>
-
         {/* Results */}
         {viewMode === 'list' ? (
           <div className="space-y-6">
