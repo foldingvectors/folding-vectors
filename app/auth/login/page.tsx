@@ -3,6 +3,7 @@
 import { useState } from 'react'
 import { supabase } from '@/lib/supabase'
 import { useRouter } from 'next/navigation'
+import { Footer } from '@/components/Footer'
 
 type AuthMode = 'magic' | 'password' | 'signup'
 
@@ -270,6 +271,9 @@ export default function LoginPage() {
             Back to home
           </button>
         </div>
+
+        {/* Footer */}
+        <Footer className="mt-12" />
 
       </div>
     </div>

@@ -6,6 +6,7 @@ import { User } from '@supabase/supabase-js'
 import { useRouter } from 'next/navigation'
 import { ThemeToggle } from '@/components/ThemeToggle'
 import { ChartIcon, ScalesIcon, ArrowIcon } from '@/components/icons'
+import { Footer } from '@/components/Footer'
 
 interface Analysis {
   id: string
@@ -364,6 +365,9 @@ export default function DashboardPage() {
         )}
 
       </div>
+
+      {/* Footer */}
+      <Footer className="mt-16" />
     </div>
   )
 }

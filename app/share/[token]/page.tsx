@@ -7,6 +7,7 @@ import { CheckIcon, CopyIcon, DownloadIcon } from '@/components/icons'
 import { SynthesisView } from '@/components/SynthesisView'
 import { getPerspectiveById } from '@/lib/perspectives'
 import { exportToPDF, exportToWord, exportSynthesisToPDF, exportSynthesisToWord } from '@/lib/export-utils'
+import { Footer } from '@/components/Footer'
 
 interface Analysis {
   id: string
@@ -400,7 +401,7 @@ export default function SharedAnalysisPage({ params }: { params: Promise<{ token
           </div>
         )}
 
-        {/* Footer */}
+        {/* CTA */}
         <div className="mt-12 pt-8 border-t border-[var(--border)] text-center">
           <p className="text-sm opacity-60 mb-4">
             Analyzed with Folding Vectors
@@ -414,6 +415,9 @@ export default function SharedAnalysisPage({ params }: { params: Promise<{ token
         </div>
 
       </div>
+
+      {/* Footer */}
+      <Footer className="mt-12" />
     </div>
   )
 }

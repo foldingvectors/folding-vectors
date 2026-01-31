@@ -9,6 +9,7 @@ import { CheckIcon, CopyIcon, DownloadIcon, ShareIcon } from '@/components/icons
 import { SynthesisView } from '@/components/SynthesisView'
 import { getPerspectiveById, PERSPECTIVE_CATEGORIES } from '@/lib/perspectives'
 import { exportToPDF, exportToWord, exportSynthesisToPDF, exportSynthesisToWord } from '@/lib/export-utils'
+import { Footer } from '@/components/Footer'
 
 interface Analysis {
   id: string
@@ -523,6 +524,9 @@ export default function AnalysisPage({ params }: { params: Promise<{ id: string 
         )}
 
       </div>
+
+      {/* Footer */}
+      <Footer className="mt-16" />
     </div>
   )
 }
