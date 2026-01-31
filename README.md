@@ -99,3 +99,4 @@ MIT
 - Twitter: [@foldingvectors](https://x.com/foldingvectors)
 - LinkedIn: [Folding Vectors](https://linkedin.com/company/folding-vectors/)
 - GitHub: [foldingvectors/folding-vectors](https://github.com/foldingvectors/folding-vectors)
+
