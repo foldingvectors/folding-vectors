@@ -1,0 +1,6 @@
+export { ChartIcon } from './ChartIcon'
+export { ScalesIcon } from './ScalesIcon'
+export { ArrowIcon } from './ArrowIcon'
+export { CheckIcon } from './CheckIcon'
+export { CopyIcon } from './CopyIcon'
+export { DownloadIcon } from './DownloadIcon'
