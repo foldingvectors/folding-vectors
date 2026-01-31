@@ -8,6 +8,89 @@ const PERSPECTIVES = [
   { id: 'strategy', name: 'Strategy', icon: '📈', description: 'Market position, competitive dynamics' },
 ]
 
+const SAMPLE_DOCUMENTS = {
+  investment: `Investment Opportunity: EcoCharge Electric Vehicle Charging Network
+
+Company Overview:
+EcoCharge is building a nationwide network of fast-charging stations for electric vehicles. Currently operating 150 stations across 12 states with plans to expand to 1,000 stations within 24 months.
+
+Financials:
+- Current revenue: $8M annually
+- Burn rate: $2M/month
+- Raising: $50M Series B at $200M valuation
+- Projected revenue Year 3: $100M
+
+Market:
+- EV adoption growing 40% YoY
+- Charging infrastructure severely lacking in most regions
+- Government subsidies available for charging infrastructure (up to 30% of costs)
+- Major competitors: ChargePoint, EVgo
+
+Team:
+- CEO: Former Tesla executive with 10 years in EV infrastructure
+- CTO: 15 years in energy infrastructure development
+- CFO: Ex-Goldman Sachs, led energy sector deals
+
+The Ask: $5M minimum investment for Series B participation`,
+
+  contract: `EMPLOYMENT AGREEMENT
+
+This Employment Agreement ("Agreement") is entered into as of January 1, 2025, between TechCorp Inc. ("Company") and John Smith ("Employee").
+
+1. POSITION AND DUTIES
+Employee shall serve as Senior Software Engineer and report to the VP of Engineering.
+
+2. COMPENSATION
+- Base salary: $180,000 per year
+- Annual bonus: Up to 20% based on performance
+- Stock options: 10,000 shares vesting over 4 years
+
+3. NON-COMPETE CLAUSE
+Employee agrees not to work for any competitor for 24 months after termination within 100-mile radius of Company headquarters.
+
+4. INTELLECTUAL PROPERTY
+All work product created during employment, including nights and weekends, shall be property of the Company.
+
+5. TERMINATION
+Either party may terminate with 30 days notice. Company may terminate immediately for cause.
+
+6. CONFIDENTIALITY
+Employee must maintain strict confidentiality of all Company information indefinitely.
+
+7. DISPUTE RESOLUTION
+Any disputes shall be resolved through binding arbitration in Delaware.`,
+
+  strategy: `Market Entry Strategy: HealthTrack Wearables - European Expansion
+
+Executive Summary:
+HealthTrack is evaluating entry into the European wearable fitness device market, currently dominated by Fitbit (35% share), Garmin (28%), and Apple Watch (22%).
+
+Our Product:
+- Medical-grade heart rate monitoring (FDA approved)
+- 14-day battery life vs. competitors' 5-7 days
+- AI-powered health insights
+- Price point: €299 (premium positioning)
+
+Market Opportunity:
+- European wearables market: €4.2B, growing 18% annually
+- Medical wearables segment: €800M, growing 35% annually
+- Aging population driving demand for health monitoring
+
+Entry Strategy:
+- Phase 1: Germany, UK, France (70% of market)
+- Distribution: Direct-to-consumer + partnerships with healthcare providers
+- Marketing: Medical certification as key differentiator
+- Timeline: 18 months to profitability
+
+Risks:
+- GDPR compliance for health data
+- CE marking certification required (6-9 months)
+- Strong incumbent relationships with retailers
+- Currency fluctuation exposure
+
+Investment Required: €15M over 24 months`
+}
+
 export default function Home() {
   const [text, setText] = useState('')
   const [email, setEmail] = useState('')
@@ -125,9 +208,33 @@ export default function Home() {
             </div>
 
             <div className="mb-4">
-              <label className="block text-slate-300 mb-2 text-sm font-medium">
-                Document to Analyze
-              </label>
+              <div className="flex items-center justify-between mb-2">
+                <label className="block text-slate-300 text-sm font-medium">
+                  Document to Analyze
+                </label>
+                <div className="flex gap-2">
+                  <button
+                    onClick={() => setText(SAMPLE_DOCUMENTS.investment)}
+                    className="text-xs text-blue-400 hover:text-blue-300 transition"
+                  >
+                    Investment
+                  </button>
+                  <span className="text-slate-600">•</span>
+                  <button
+                    onClick={() => setText(SAMPLE_DOCUMENTS.contract)}
+                    className="text-xs text-blue-400 hover:text-blue-300 transition"
+                  >
+                    Contract
+                  </button>
+                  <span className="text-slate-600">•</span>
+                  <button
+                    onClick={() => setText(SAMPLE_DOCUMENTS.strategy)}
+                    className="text-xs text-blue-400 hover:text-blue-300 transition"
+                  >
+                    Strategy
+                  </button>
+                </div>
+              </div>
               <textarea
                 value={text}
                 onChange={(e) => setText(e.target.value)}
@@ -175,26 +282,203 @@ export default function Home() {
             )}
 
             {Object.keys(results).length > 0 && !loading && (
-              <div className="space-y-4">
+              <div className="space-y-6">
                 {selectedPerspectives.map((perspectiveId) => {
                   const perspective = PERSPECTIVES.find(p => p.id === perspectiveId)
-                  const result = results[perspectiveId]
+                  const resultText = results[perspectiveId]
                   
-                  if (!result) return null
+                  if (!resultText) return null
+
+                  // Try to parse JSON, fallback to raw text if it fails
+                  let parsedResult: any = null
+                  try {
+                    // Remove markdown code blocks if present
+                    const cleaned = resultText
+                      .replace(/```json\n?/g, '')
+                      .replace(/```\n?/g, '')
+                      .trim()
+                    parsedResult = JSON.parse(cleaned)
+                  } catch (e) {
+                    // If parsing fails, show raw text
+                    parsedResult = null
+                  }
 
                   return (
                     <div key={perspectiveId} className="bg-slate-800 border border-slate-700 rounded-lg overflow-hidden">
-                      <div className="px-4 py-3 bg-slate-900 border-b border-slate-700 flex items-center gap-3">
-                        <span className="text-2xl">{perspective?.icon}</span>
+                      {/* Header */}
+                      <div className="px-6 py-4 bg-slate-900 border-b border-slate-700 flex items-center gap-3">
+                        <span className="text-3xl">{perspective?.icon}</span>
                         <div>
-                          <div className="font-semibold text-white">{perspective?.name} Perspective</div>
-                          <div className="text-xs text-slate-400">{perspective?.description}</div>
+                          <div className="font-semibold text-white text-lg">{perspective?.name} Perspective</div>
+                          <div className="text-sm text-slate-400">{perspective?.description}</div>
                         </div>
                       </div>
-                      <div className="p-4">
-                        <pre className="text-slate-300 text-sm whitespace-pre-wrap font-mono">
-                          {result}
-                        </pre>
+
+                      {/* Content */}
+                      <div className="p-6">
+                        {parsedResult ? (
+                          <div className="space-y-6">
+                            {/* Summary */}
+                            {parsedResult.summary && (
+                              <div>
+                                <h3 className="text-sm font-semibold text-slate-400 uppercase tracking-wide mb-2">
+                                  Summary
+                                </h3>
+                                <p className="text-slate-200 leading-relaxed">
+                                  {parsedResult.summary}
+                                </p>
+                              </div>
+                            )}
+
+                            {/* Competitive Position (Strategy only) */}
+                            {parsedResult.competitive_position && (
+                              <div>
+                                <h3 className="text-sm font-semibold text-slate-400 uppercase tracking-wide mb-2">
+                                  Competitive Position
+                                </h3>
+                                <p className="text-slate-200 leading-relaxed">
+                                  {parsedResult.competitive_position}
+                                </p>
+                              </div>
+                            )}
+
+                            {/* Opportunities */}
+                            {parsedResult.opportunities && parsedResult.opportunities.length > 0 && (
+                              <div>
+                                <h3 className="text-sm font-semibold text-green-400 uppercase tracking-wide mb-3">
+                                  ✓ Opportunities
+                                </h3>
+                                <ul className="space-y-2">
+                                  {parsedResult.opportunities.map((item: string, i: number) => (
+                                    <li key={i} className="flex items-start gap-3">
+                                      <span className="text-green-400 mt-1">•</span>
+                                      <span className="text-slate-300">{item}</span>
+                                    </li>
+                                  ))}
+                                </ul>
+                              </div>
+                            )}
+
+                            {/* Risks */}
+                            {parsedResult.risks && parsedResult.risks.length > 0 && (
+                              <div>
+                                <h3 className="text-sm font-semibold text-red-400 uppercase tracking-wide mb-3">
+                                  ⚠ Risks
+                                </h3>
+                                <ul className="space-y-2">
+                                  {parsedResult.risks.map((item: string, i: number) => (
+                                    <li key={i} className="flex items-start gap-3">
+                                      <span className="text-red-400 mt-1">•</span>
+                                      <span className="text-slate-300">{item}</span>
+                                    </li>
+                                  ))}
+                                </ul>
+                              </div>
+                            )}
+
+                            {/* Strategic Risks */}
+                            {parsedResult.strategic_risks && parsedResult.strategic_risks.length > 0 && (
+                              <div>
+                                <h3 className="text-sm font-semibold text-orange-400 uppercase tracking-wide mb-3">
+                                  ⚠ Strategic Risks
+                                </h3>
+                                <ul className="space-y-2">
+                                  {parsedResult.strategic_risks.map((item: string, i: number) => (
+                                    <li key={i} className="flex items-start gap-3">
+                                      <span className="text-orange-400 mt-1">•</span>
+                                      <span className="text-slate-300">{item}</span>
+                                    </li>
+                                  ))}
+                                </ul>
+                              </div>
+                            )}
+
+                            {/* Red Flags (Legal only) */}
+                            {parsedResult.red_flags && parsedResult.red_flags.length > 0 && (
+                              <div>
+                                <h3 className="text-sm font-semibold text-red-500 uppercase tracking-wide mb-3">
+                                  🚨 Critical Issues
+                                </h3>
+                                <ul className="space-y-2">
+                                  {parsedResult.red_flags.map((item: string, i: number) => (
+                                    <li key={i} className="flex items-start gap-3 p-3 bg-red-900/20 border border-red-800 rounded">
+                                      <span className="text-red-400 mt-1">!</span>
+                                      <span className="text-red-200">{item}</span>
+                                    </li>
+                                  ))}
+                                </ul>
+                              </div>
+                            )}
+
+                            {/* Compliance (Legal only) */}
+                            {parsedResult.compliance && parsedResult.compliance.length > 0 && (
+                              <div>
+                                <h3 className="text-sm font-semibold text-blue-400 uppercase tracking-wide mb-3">
+                                  Compliance Issues
+                                </h3>
+                                <ul className="space-y-2">
+                                  {parsedResult.compliance.map((item: string, i: number) => (
+                                    <li key={i} className="flex items-start gap-3">
+                                      <span className="text-blue-400 mt-1">•</span>
+                                      <span className="text-slate-300">{item}</span>
+                                    </li>
+                                  ))}
+                                </ul>
+                              </div>
+                            )}
+
+                            {/* Questions (Investor only) */}
+                            {parsedResult.questions && parsedResult.questions.length > 0 && (
+                              <div>
+                                <h3 className="text-sm font-semibold text-purple-400 uppercase tracking-wide mb-3">
+                                  ? Critical Questions
+                                </h3>
+                                <ul className="space-y-2">
+                                  {parsedResult.questions.map((item: string, i: number) => (
+                                    <li key={i} className="flex items-start gap-3">
+                                      <span className="text-purple-400 mt-1">•</span>
+                                      <span className="text-slate-300">{item}</span>
+                                    </li>
+                                  ))}
+                                </ul>
+                              </div>
+                            )}
+
+                            {/* Recommendations */}
+                            {parsedResult.recommendations && parsedResult.recommendations.length > 0 && (
+                              <div>
+                                <h3 className="text-sm font-semibold text-blue-400 uppercase tracking-wide mb-3">
+                                  → Recommendations
+                                </h3>
+                                <ul className="space-y-2">
+                                  {parsedResult.recommendations.map((item: string, i: number) => (
+                                    <li key={i} className="flex items-start gap-3">
+                                      <span className="text-blue-400 mt-1">•</span>
+                                      <span className="text-slate-300">{item}</span>
+                                    </li>
+                                  ))}
+                                </ul>
+                              </div>
+                            )}
+
+                            {/* Recommendation/Decision (Investor only) */}
+                            {parsedResult.recommendation && (
+                              <div className="mt-6 pt-6 border-t border-slate-700">
+                                <h3 className="text-sm font-semibold text-slate-400 uppercase tracking-wide mb-2">
+                                  Recommendation
+                                </h3>
+                                <p className="text-lg font-semibold text-white">
+                                  {parsedResult.recommendation}
+                                </p>
+                              </div>
+                            )}
+                          </div>
+                        ) : (
+                          // Fallback: show raw text if JSON parsing failed
+                          <pre className="text-slate-300 text-sm whitespace-pre-wrap font-mono">
+                            {resultText}
+                          </pre>
+                        )}
                       </div>
                     </div>
                   )
