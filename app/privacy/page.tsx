@@ -43,7 +43,7 @@ export default function PrivacyPolicyPage() {
               Folding Vectors is the data controller responsible for your personal data. For any privacy-related inquiries, please contact us at:
             </p>
             <p className="opacity-80 mt-2">
-              Email: privacy@foldingvectors.com
+              Email: hello@foldingvectors.com
             </p>
           </section>
 
@@ -187,7 +187,7 @@ export default function PrivacyPolicyPage() {
               If you have questions about this Privacy Policy or our privacy practices, please contact us at:
             </p>
             <p className="opacity-80 mt-2">
-              Email: privacy@foldingvectors.com
+              Email: hello@foldingvectors.com
             </p>
             <p className="opacity-80 mt-2">
               For GDPR-related inquiries, you also have the right to lodge a complaint with your local supervisory authority.

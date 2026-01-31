@@ -226,7 +226,7 @@ export default function TermsOfServicePage() {
               For questions about these Terms, please contact us at:
             </p>
             <p className="opacity-80 mt-2">
-              Email: legal@foldingvectors.com
+              Email: hello@foldingvectors.com
             </p>
           </section>
         </div>

@@ -176,7 +176,7 @@ export default function CookiePolicyPage() {
               If you have questions about our use of cookies, please contact us at:
             </p>
             <p className="opacity-80 mt-2">
-              Email: privacy@foldingvectors.com
+              Email: hello@foldingvectors.com
             </p>
           </section>
 

@@ -54,16 +54,28 @@ const formatForCopy = (perspectiveName: string, parsedResult: ParsedResult) => {
 }
 
 // Format all results for copying
-const formatAllForCopy = (perspectiveIds: string[], results: Record<string, string>) => {
+const formatAllForCopy = (
+  perspectiveIds: string[],
+  results: Record<string, string>,
+  customPerspectives: Array<{ id: string; name: string; prompt: string }> = []
+) => {
   let formatted = '='.repeat(60) + '\n'
   formatted += 'FOLDING VECTORS - MULTI-PERSPECTIVE ANALYSIS\n'
   formatted += '='.repeat(60) + '\n\n'
 
   perspectiveIds.forEach((perspectiveId, index) => {
-    const perspective = getPerspectiveById(perspectiveId)
+    const isCustom = perspectiveId.startsWith('custom:')
+    const customPerspective = isCustom
+      ? customPerspectives.find(p => `custom:${p.id}` === perspectiveId)
+      : null
+    const builtInPerspective = !isCustom ? getPerspectiveById(perspectiveId) : null
     const resultText = results[perspectiveId]
 
-    if (!resultText || !perspective) return
+    if (!resultText) return
+    if (!isCustom && !builtInPerspective) return
+    if (isCustom && !customPerspective) return
+
+    const perspectiveName = isCustom ? customPerspective!.name : builtInPerspective!.name
 
     try {
       const cleaned = resultText
@@ -76,7 +88,7 @@ const formatAllForCopy = (perspectiveIds: string[], results: Record<string, stri
         formatted += '\n' + '-'.repeat(60) + '\n\n'
       }
 
-      formatted += formatForCopy(perspective.name, parsedResult)
+      formatted += formatForCopy(perspectiveName, parsedResult)
     } catch {
       // Skip if parsing fails
     }
@@ -193,6 +205,21 @@ export default function Home() {
   const [shareUrl, setShareUrl] = useState<string | null>(null)
   const [sharing, setSharing] = useState(false)
   const [shareCopied, setShareCopied] = useState(false)
+  const [customPerspectives, setCustomPerspectives] = useState<Array<{ id: string; name: string; prompt: string; created_at: string }>>([])
+
+  const fetchCustomPerspectives = async () => {
+    if (!user) return
+
+    try {
+      const response = await fetch('/api/custom-perspectives')
+      if (response.ok) {
+        const data = await response.json()
+        setCustomPerspectives(data.perspectives || [])
+      }
+    } catch (error) {
+      console.error('Error fetching custom perspectives:', error)
+    }
+  }
 
   const fetchUsageInfo = async () => {
     if (!user) return
@@ -353,6 +380,7 @@ export default function Home() {
   useEffect(() => {
     if (user) {
       fetchUsageInfo()
+      fetchCustomPerspectives()
     }
   // eslint-disable-next-line react-hooks/exhaustive-deps
   }, [user])
@@ -717,12 +745,15 @@ export default function Home() {
               </div>
             )}
 
-            {/* New Perspective Selector */}
+            {/* Perspective Selector */}
             <div className="mb-2">
               <PerspectiveSelector
                 selected={selectedPerspectives}
                 onChange={setSelectedPerspectives}
                 maxSelections={5}
+                customPerspectives={customPerspectives}
+                onCustomPerspectivesChange={fetchCustomPerspectives}
+                isLoggedIn={!!user}
               />
             </div>
 
@@ -912,7 +943,7 @@ export default function Home() {
 
                   <button
                     onClick={async () => {
-                      const allText = formatAllForCopy(selectedPerspectives, results)
+                      const allText = formatAllForCopy(selectedPerspectives, results, customPerspectives)
                       await copyToClipboard(allText)
                       setCopiedId('all')
                       setTimeout(() => setCopiedId(null), 2000)
@@ -1068,10 +1099,20 @@ export default function Home() {
             {Object.keys(results).length > 0 && !loading && viewMode === 'list' && (
               <div className="space-y-6">
                 {selectedPerspectives.map((perspectiveId) => {
-                  const perspective = getPerspectiveById(perspectiveId)
+                  // Handle both built-in and custom perspectives
+                  const isCustom = perspectiveId.startsWith('custom:')
+                  const customPerspective = isCustom
+                    ? customPerspectives.find(p => `custom:${p.id}` === perspectiveId)
+                    : null
+                  const builtInPerspective = !isCustom ? getPerspectiveById(perspectiveId) : null
                   const resultText = results[perspectiveId]
 
-                  if (!resultText || !perspective) return null
+                  if (!resultText) return null
+                  if (!isCustom && !builtInPerspective) return null
+                  if (isCustom && !customPerspective) return null
+
+                  const perspectiveName = isCustom ? customPerspective!.name : builtInPerspective!.name
+                  const perspectiveDescription = isCustom ? 'Custom perspective' : builtInPerspective!.coreFocus
 
                   let parsedResult: ParsedResult | null = null
                   try {
@@ -1090,11 +1131,16 @@ export default function Home() {
                       <div className="px-6 py-4 border-b border-[var(--border)] flex items-center justify-between">
                         <div className="flex items-center gap-3">
                           <div className="w-8 h-8 border border-[var(--border)] rounded-md flex items-center justify-center text-xs font-medium">
-                            {perspective.name.charAt(0)}
+                            {isCustom ? '★' : perspectiveName.charAt(0)}
                           </div>
                           <div>
-                            <div className="font-medium">{perspective.name}</div>
-                            <div className="text-xs opacity-60">{perspective.coreFocus}</div>
+                            <div className="font-medium flex items-center gap-2">
+                              {perspectiveName}
+                              {isCustom && (
+                                <span className="text-xs px-1.5 py-0.5 bg-[var(--text)] bg-opacity-10 rounded">Custom</span>
+                              )}
+                            </div>
+                            <div className="text-xs opacity-60">{perspectiveDescription}</div>
                           </div>
                         </div>
                         <button
@@ -1140,9 +1186,14 @@ export default function Home() {
                   Select perspectives, paste a document, and click Analyze to see insights from multiple professional viewpoints.
                 </p>
 
-                <div className="text-xs opacity-40">
+                <div className="text-xs opacity-40 mb-2">
                   {PERSPECTIVES.length} perspectives available across 5 categories
                 </div>
+                {user && (
+                  <div className="text-xs opacity-40">
+                    Missing a perspective? Create your own in the Custom tab.
+                  </div>
+                )}
               </div>
             )}
           </div>

@@ -56,6 +56,28 @@ function shouldResetDailyUsage(lastResetDate: string | null): boolean {
   return now.toDateString() !== lastReset.toDateString()
 }
 
+// Wrapper prompt for custom perspectives to ensure consistent JSON output
+function wrapCustomPrompt(userPrompt: string, perspectiveName: string): string {
+  return `You are an expert analyst with the following perspective and focus:
+
+${userPrompt}
+
+Analyze the document provided below from this perspective. Be thorough, specific, and provide actionable insights.
+
+IMPORTANT: You must respond ONLY with valid JSON in exactly this format. Do not include any text before or after the JSON.
+
+{
+  "summary": "2-3 sentence overview of your key findings from this perspective",
+  "key_insights": ["insight 1 with specific details", "insight 2 with specific details", "insight 3 with specific details"],
+  "opportunities": ["opportunity 1 with rationale", "opportunity 2 with rationale"],
+  "risks_or_concerns": ["risk/concern 1 with explanation", "risk/concern 2 with explanation"],
+  "questions": ["critical question 1 that needs to be answered", "critical question 2"],
+  "recommendation": "Clear, actionable recommendation based on your ${perspectiveName} analysis"
+}
+
+Provide at least 3 key insights, 2 opportunities, 2 risks/concerns, and 2 questions. Be specific and reference details from the document.`
+}
+
 export async function POST(request: Request) {
   const supabase = await createServerClient()
 
@@ -160,44 +182,113 @@ export async function POST(request: Request) {
       )
     }
 
-    // Validate all perspectives exist
+    // Separate built-in perspectives from custom ones
+    const builtInPerspectives: string[] = []
+    const customPerspectiveIds: string[] = []
+
     for (const perspectiveId of perspectives) {
-      const perspective = getPerspectiveById(perspectiveId)
-      if (!perspective) {
+      if (perspectiveId.startsWith('custom:')) {
+        customPerspectiveIds.push(perspectiveId.replace('custom:', ''))
+      } else {
+        const perspective = getPerspectiveById(perspectiveId)
+        if (!perspective) {
+          return NextResponse.json(
+            { error: `Unknown perspective: ${perspectiveId}` },
+            { status: 400 }
+          )
+        }
+        builtInPerspectives.push(perspectiveId)
+      }
+    }
+
+    // Fetch custom perspectives from database
+    let customPerspectivesData: Array<{ id: string; name: string; prompt: string }> = []
+    if (customPerspectiveIds.length > 0) {
+      const { data, error } = await supabase
+        .from('custom_perspectives')
+        .select('id, name, prompt')
+        .in('id', customPerspectiveIds)
+        .eq('user_id', user.id)
+
+      if (error) {
+        console.error('Error fetching custom perspectives:', error)
         return NextResponse.json(
-          { error: `Unknown perspective: ${perspectiveId}` },
+          { error: 'Error loading custom perspectives' },
+          { status: 500 }
+        )
+      }
+
+      customPerspectivesData = data || []
+
+      // Verify all custom perspectives were found
+      if (customPerspectivesData.length !== customPerspectiveIds.length) {
+        return NextResponse.json(
+          { error: 'One or more custom perspectives not found' },
           { status: 400 }
         )
       }
     }
 
     // Run all selected perspectives in parallel
-    const analysisPromises = perspectives.map(async (perspectiveId: string) => {
-      const perspective = getPerspectiveById(perspectiveId)
-      if (!perspective) {
-        throw new Error(`Unknown perspective: ${perspectiveId}`)
-      }
+    const analysisPromises: Promise<{ perspective: string; result: string }>[] = []
 
-      const fullPrompt = `${perspective.prompt}
+    // Built-in perspectives
+    for (const perspectiveId of builtInPerspectives) {
+      const perspective = getPerspectiveById(perspectiveId)
+      if (!perspective) continue
+
+      const promise = (async () => {
+        const fullPrompt = `${perspective.prompt}
 
 Document to analyze:
 ${text}`
 
-      const message = await getAnthropic().messages.create({
-        model: 'claude-sonnet-4-20250514',
-        max_tokens: 4096,
-        messages: [{
-          role: 'user',
-          content: fullPrompt
-        }]
-      })
+        const message = await getAnthropic().messages.create({
+          model: 'claude-sonnet-4-20250514',
+          max_tokens: 4096,
+          messages: [{
+            role: 'user',
+            content: fullPrompt
+          }]
+        })
 
-      const result = message.content[0].type === 'text'
-        ? message.content[0].text
-        : 'Error processing response'
+        const result = message.content[0].type === 'text'
+          ? message.content[0].text
+          : 'Error processing response'
 
-      return { perspective: perspectiveId, result }
-    })
+        return { perspective: perspectiveId, result }
+      })()
+
+      analysisPromises.push(promise)
+    }
+
+    // Custom perspectives
+    for (const customPerspective of customPerspectivesData) {
+      const promise = (async () => {
+        const wrappedPrompt = wrapCustomPrompt(customPerspective.prompt, customPerspective.name)
+        const fullPrompt = `${wrappedPrompt}
+
+Document to analyze:
+${text}`
+
+        const message = await getAnthropic().messages.create({
+          model: 'claude-sonnet-4-20250514',
+          max_tokens: 4096,
+          messages: [{
+            role: 'user',
+            content: fullPrompt
+          }]
+        })
+
+        const result = message.content[0].type === 'text'
+          ? message.content[0].text
+          : 'Error processing response'
+
+        return { perspective: `custom:${customPerspective.id}`, result }
+      })()
+
+      analysisPromises.push(promise)
+    }
 
     // Wait for all analyses to complete
     const analyses = await Promise.all(analysisPromises)
