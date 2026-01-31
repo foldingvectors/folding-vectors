@@ -21,6 +21,12 @@ interface Analysis {
   status: string
 }
 
+interface CustomPerspective {
+  id: string
+  name: string
+  prompt: string
+}
+
 // eslint-disable-next-line @typescript-eslint/no-explicit-any
 type ParsedResult = Record<string, any>
 
@@ -144,6 +150,7 @@ export default function AnalysisPage({ params }: { params: Promise<{ id: string 
   const [loading, setLoading] = useState(true)
   const [loadingMessage, setLoadingMessage] = useState(LOADING_MESSAGES[0])
   const [analysis, setAnalysis] = useState<Analysis | null>(null)
+  const [customPerspectives, setCustomPerspectives] = useState<CustomPerspective[]>([])
   const [copiedId, setCopiedId] = useState<string | null>(null)
   const [viewMode, setViewMode] = useState<'list' | 'synthesis'>('list')
   const [shareUrl, setShareUrl] = useState<string | null>(null)
@@ -160,9 +167,22 @@ export default function AnalysisPage({ params }: { params: Promise<{ id: string 
       setUser(session.user)
       fetchAnalysis()
       fetchShareStatus()
+      fetchCustomPerspectives()
     })
   // eslint-disable-next-line react-hooks/exhaustive-deps
   }, [router])
+
+  const fetchCustomPerspectives = async () => {
+    try {
+      const response = await fetch('/api/custom-perspectives')
+      const data = await response.json()
+      if (response.ok && data.perspectives) {
+        setCustomPerspectives(data.perspectives)
+      }
+    } catch (error) {
+      console.error('Error fetching custom perspectives:', error)
+    }
+  }
 
   const fetchShareStatus = async () => {
     try {
@@ -461,9 +481,14 @@ export default function AnalysisPage({ params }: { params: Promise<{ id: string 
               if (!resultText) return null
               if (!isCustom && !perspective) return null
 
-              // For custom perspectives, extract name from the result if possible
-              let perspectiveName = isCustom ? 'Custom Perspective' : perspective!.name
-              let perspectiveDescription = isCustom ? 'Custom perspective' : perspective!.coreFocus
+              // For custom perspectives, look up the name from fetched custom perspectives
+              const customPerspective = isCustom
+                ? customPerspectives.find(p => `custom:${p.id}` === perspectiveId)
+                : null
+              const perspectiveName = isCustom
+                ? (customPerspective?.name || 'Custom Perspective')
+                : perspective!.name
+              const perspectiveDescription = isCustom ? 'Custom perspective' : perspective!.coreFocus
               const categoryIcon = isCustom ? CATEGORY_ICONS.custom : CATEGORY_ICONS[perspective!.category]
 
               let parsedResult: ParsedResult | null = null
@@ -530,6 +555,7 @@ export default function AnalysisPage({ params }: { params: Promise<{ id: string 
             <SynthesisView
               perspectives={analysis.perspectives}
               results={analysis.results}
+              customPerspectives={customPerspectives}
               onExportPDF={() => exportSynthesisToPDF(analysis.perspectives, analysis.results, `${analysis.title} Synthesis`, user?.email || undefined)}
               onExportWord={() => exportSynthesisToWord(analysis.perspectives, analysis.results, `${analysis.title} Synthesis`, user?.email || undefined)}
             />

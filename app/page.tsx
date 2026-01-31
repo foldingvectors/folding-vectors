@@ -1090,6 +1090,7 @@ export default function Home() {
                 <SynthesisView
                   perspectives={selectedPerspectives}
                   results={results}
+                  customPerspectives={customPerspectives}
                   onExportPDF={() => exportSynthesisToPDF(selectedPerspectives, results, 'Analysis Synthesis', user?.email || email || undefined)}
                   onExportWord={() => exportSynthesisToWord(selectedPerspectives, results, 'Analysis Synthesis', user?.email || email || undefined)}
                 />

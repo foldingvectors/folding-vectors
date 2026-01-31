@@ -3,9 +3,16 @@
 import { useMemo, useState } from 'react'
 import { PERSPECTIVES } from '@/lib/perspectives'
 
+interface CustomPerspective {
+  id: string
+  name: string
+  prompt: string
+}
+
 interface SynthesisViewProps {
   perspectives: string[]
   results: Record<string, string>
+  customPerspectives?: CustomPerspective[]
   onExportPDF?: () => void
   onExportWord?: () => void
 }
@@ -45,7 +52,14 @@ function parseResult(resultText: string): ParsedResult | null {
   }
 }
 
-function getPerspectiveName(id: string): string {
+function getPerspectiveName(id: string, customPerspectives: CustomPerspective[] = []): string {
+  // Check if it's a custom perspective
+  if (id.startsWith('custom:')) {
+    const customId = id.replace('custom:', '')
+    const custom = customPerspectives.find(p => p.id === customId)
+    return custom?.name || 'Custom Perspective'
+  }
+  // Built-in perspective
   const perspective = PERSPECTIVES.find(p => p.id === id)
   return perspective?.name || id
 }
@@ -81,7 +95,7 @@ function calculateScore(text: string): number {
 }
 
 // Extract themes and generate specific insights
-function extractThemes(perspectives: string[], results: Record<string, string>): {
+function extractThemes(perspectives: string[], results: Record<string, string>, customPerspectives: CustomPerspective[] = []): {
   agreements: InsightItem[]
   tensions: InsightItem[]
   summaries: PerspectiveSummary[]
@@ -95,7 +109,7 @@ function extractThemes(perspectives: string[], results: Record<string, string>):
     const parsed = parseResult(results[id] || '')
     if (!parsed) return
 
-    const name = getPerspectiveName(id)
+    const name = getPerspectiveName(id, customPerspectives)
     const summary = parsed.Summary || parsed.summary || ''
     const recommendation = parsed.Recommendation || parsed.recommendation ||
                           (parsed.Recommendations ? parsed.Recommendations[0] : '') || ''
@@ -298,10 +312,10 @@ function ExpandableSummaryRow({ summary, isLast }: { summary: PerspectiveSummary
   )
 }
 
-export function SynthesisView({ perspectives, results, onExportPDF, onExportWord }: SynthesisViewProps) {
+export function SynthesisView({ perspectives, results, customPerspectives = [], onExportPDF, onExportWord }: SynthesisViewProps) {
   const { agreements, tensions, summaries } = useMemo(
-    () => extractThemes(perspectives, results),
-    [perspectives, results]
+    () => extractThemes(perspectives, results, customPerspectives),
+    [perspectives, results, customPerspectives]
   )
 
   // Calculate average score
