@@ -94,6 +94,39 @@ const formatForCopy = (perspective: string, parsedResult: any, icon: string) => 
   return formatted
 }
 
+
+// Format all results for copying
+const formatAllForCopy = (perspectives: string[], results: Record<string, string>) => {
+  let formatted = '═'.repeat(60) + '\n'
+  formatted += 'FOLDING VECTORS - MULTI-PERSPECTIVE ANALYSIS\n'
+  formatted += '═'.repeat(60) + '\n\n'
+  
+  perspectives.forEach((perspectiveId, index) => {
+    const perspective = PERSPECTIVES.find(p => p.id === perspectiveId)
+    const resultText = results[perspectiveId]
+    
+    if (!resultText || !perspective) return
+    
+    try {
+      const cleaned = resultText
+        .replace(/```json\n?/g, '')
+        .replace(/```\n?/g, '')
+        .trim()
+      const parsedResult = JSON.parse(cleaned)
+      
+      if (index > 0) {
+        formatted += '\n' + '─'.repeat(60) + '\n\n'
+      }
+      
+      formatted += formatForCopy(perspective.name, parsedResult, perspective.icon)
+    } catch (e) {
+      // Skip if parsing fails
+    }
+  })
+  
+  return formatted
+}
+
 const PERSPECTIVES = [
   { id: 'investor', name: 'Investor', icon: '📊', description: 'Risk/return, valuation, competitive moat' },
   { id: 'legal', name: 'Legal', icon: '⚖️', description: 'Compliance, liability, contract risk' },
@@ -437,26 +470,74 @@ const handleSignOut = async () => {
 
           {/* Right: Results */}
           <div className="lg:col-span-2">
-            <label className="block text-slate-300 mb-3 text-sm font-medium">
+            <label className="block text-slate-300 text-sm font-medium">
               Analysis Results
             </label>
+            
+            {Object.keys(results).length > 0 && !loading && (
+              <button
+                onClick={async () => {
+                  const allText = formatAllForCopy(selectedPerspectives, results)
+                  await copyToClipboard(allText)
+                  setCopiedId('all')
+                  setTimeout(() => setCopiedId(null), 2000)
+                }}
+                className="px-4 py-2 bg-blue-600 hover:bg-blue-700 border border-blue-500 rounded-lg text-sm text-white transition-all flex items-center gap-2"
+              >
+                {copiedId === 'all' ? (
+                  <>
+                    <span>✓</span>
+                    <span>Copied All!</span>
+                  </>
+                ) : (
+                  <>
+                    <span>📋</span>
+                    <span>Copy All Perspectives</span>
+                  </>
+                )}
+              </button>
+            )}
+            
 
             {loading && (
-              <div className="flex items-center justify-center h-96 bg-slate-800 border border-slate-700 rounded-lg">
-                <div className="text-center">
-                  <div className="animate-spin rounded-full h-12 w-12 border-b-2 border-blue-500 mx-auto mb-4"></div>
-                  <p className="text-slate-400">
-                    Analyzing from {selectedPerspectives.length} perspective{selectedPerspectives.length > 1 ? 's' : ''}...
-                  </p>
-                  <p className="text-slate-500 text-sm mt-2">
-                    This may take 10-30 seconds
-                  </p>
+              <div className="space-y-6">
+                {selectedPerspectives.map((perspectiveId) => {
+                  const perspective = PERSPECTIVES.find(p => p.id === perspectiveId)
+                  return (
+                    <div key={perspectiveId} className="bg-slate-800 border border-slate-700 rounded-lg overflow-hidden animate-pulse">
+                      {/* Header */}
+                      <div className="px-6 py-4 bg-slate-900 border-b border-slate-700 flex items-center gap-3">
+                        <span className="text-3xl opacity-50">{perspective?.icon}</span>
+                        <div className="flex-1">
+                          <div className="h-5 bg-slate-700 rounded w-32 mb-2"></div>
+                          <div className="h-3 bg-slate-800 rounded w-48"></div>
+                        </div>
+                      </div>
+                      {/* Body skeleton */}
+                      <div className="p-6 space-y-4">
+                        <div className="h-4 bg-slate-700 rounded w-full"></div>
+                        <div className="h-4 bg-slate-700 rounded w-5/6"></div>
+                        <div className="h-4 bg-slate-700 rounded w-4/6"></div>
+                        <div className="space-y-2 mt-6">
+                          <div className="h-3 bg-slate-800 rounded w-3/4"></div>
+                          <div className="h-3 bg-slate-800 rounded w-2/3"></div>
+                          <div className="h-3 bg-slate-800 rounded w-4/5"></div>
+                        </div>
+                      </div>
+                    </div>
+                  )
+                })}
+                
+                <div className="text-center text-slate-500 text-sm mt-6">
+                  <div className="animate-spin rounded-full h-6 w-6 border-b-2 border-blue-500 mx-auto mb-2"></div>
+                  Analyzing from {selectedPerspectives.length} perspective{selectedPerspectives.length > 1 ? 's' : ''}...
+                  <div className="text-xs mt-2 opacity-75">This may take 10-30 seconds</div>
                 </div>
               </div>
             )}
 
             {Object.keys(results).length > 0 && !loading && (
-              <div className="space-y-6">
+              <div className="space-y-6 animate-fade-in">
                 {selectedPerspectives.map((perspectiveId) => {
                   const perspective = PERSPECTIVES.find(p => p.id === perspectiveId)
                   const resultText = results[perspectiveId]
@@ -679,11 +760,30 @@ const handleSignOut = async () => {
             )}
 
             {Object.keys(results).length === 0 && !loading && (
-              <div className="flex items-center justify-center h-96 bg-slate-800 border border-slate-700 rounded-lg">
-                <div className="text-center text-slate-500">
-                  <div className="text-4xl mb-4">📄</div>
-                  <p>Results will appear here...</p>
-                  <p className="text-sm mt-2">Select perspectives and paste a document to analyze</p>
+              <div className="bg-slate-800 border border-slate-700 rounded-lg overflow-hidden">
+                <div className="p-12 text-center">
+                  <div className="text-6xl mb-6">🎯</div>
+                  <h3 className="text-xl font-semibold text-white mb-3">
+                    Ready to Analyze
+                  </h3>
+                  <p className="text-slate-400 mb-6 max-w-md mx-auto">
+                    Select your perspectives, paste a document, and click Analyze to see insights from multiple professional viewpoints.
+                  </p>
+                  
+                  <div className="grid grid-cols-3 gap-4 max-w-2xl mx-auto mt-8">
+                    <div className="bg-slate-900 rounded-lg p-4 border border-slate-700">
+                      <div className="text-2xl mb-2">📊</div>
+                      <div className="text-xs text-slate-400">Investor lens finds risks & opportunities</div>
+                    </div>
+                    <div className="bg-slate-900 rounded-lg p-4 border border-slate-700">
+                      <div className="text-2xl mb-2">⚖️</div>
+                      <div className="text-xs text-slate-400">Legal lens identifies compliance issues</div>
+                    </div>
+                    <div className="bg-slate-900 rounded-lg p-4 border border-slate-700">
+                      <div className="text-2xl mb-2">📈</div>
+                      <div className="text-xs text-slate-400">Strategy lens evaluates market position</div>
+                    </div>
+                  </div>
                 </div>
               </div>
             )}
