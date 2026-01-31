@@ -10,10 +10,12 @@ The goal is not to change your mind. It is to ensure that when you decide, you d
 
 ## Features
 
-- **20+ Perspectives** - From Investor to Ethicist, Legal Counsel to Devil's Advocate
+- **20+ Built-in Perspectives** - From Investor to Ethicist, Legal Counsel to Devil's Advocate
+- **Custom Perspectives** - Create your own analysis perspectives tailored to your needs
 - **Synthesis View** - See where perspectives agree and where they clash
 - **Professional Export** - Memo-style PDF and Word documents
-- **File Upload** - Support for PDF, DOCX, and TXT files
+- **Shareable Links** - Share read-only analysis results with others
+- **File Upload** - Support for PDF, DOCX, and TXT files (up to 50,000 characters)
 - **Dark/Light Mode** - Clean black and white aesthetic
 
 ## Getting Started
@@ -43,19 +45,27 @@ npm run dev
 
 Open [http://localhost:3000](http://localhost:3000) to see the app.
 
+### Database Setup
+
+Run the SQL migrations in `supabase/migrations/` in your Supabase SQL Editor:
+1. `add_share_token.sql` - Enables shareable analysis links
+2. `add_custom_perspectives.sql` - Enables custom user perspectives
+
 ## Tech Stack
 
-- **Framework**: Next.js 16 with App Router
+- **Framework**: Next.js 14 with App Router
 - **Styling**: Tailwind CSS
 - **Database**: Supabase (PostgreSQL)
-- **Auth**: Supabase Auth
-- **AI**: Anthropic Claude API
+- **Auth**: Supabase Auth (Magic Link, Password, Google OAuth)
+- **AI**: Anthropic Claude API (Claude Sonnet)
 - **PDF Export**: jsPDF
 - **Word Export**: docx
 
 ## Perspectives
 
-Perspectives are organized into 5 categories:
+### Built-in Perspectives
+
+Organized into 5 categories:
 
 | Category | Perspectives |
 |----------|-------------|
@@ -64,6 +74,19 @@ Perspectives are organized into 5 categories:
 | Compliance | Legal, Regulatory, Privacy, Security |
 | Technical | Technical, Data, Systems, Architecture |
 | Human | Ethicist, Employee, Skeptic, Devil's Advocate, Historian |
+
+### Custom Perspectives
+
+Create your own perspectives in the "Custom" tab:
+- Give it a name (e.g., "Sustainability Expert")
+- Write a prompt describing how it should analyze documents
+- Output is automatically structured with Summary, Key Insights, Opportunities, Risks, Questions, and Recommendations
+
+## Legal
+
+- [Terms of Service](https://foldingvectors.com/terms)
+- [Privacy Policy](https://foldingvectors.com/privacy)
+- [Cookie Policy](https://foldingvectors.com/cookies)
 
 ## License
 
@@ -75,3 +98,4 @@ MIT
 - Email: hello@foldingvectors.com
 - Twitter: [@foldingvectors](https://x.com/foldingvectors)
 - LinkedIn: [Folding Vectors](https://linkedin.com/company/folding-vectors/)
+- GitHub: [foldingvectors/folding-vectors](https://github.com/foldingvectors/folding-vectors)
