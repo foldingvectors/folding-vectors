@@ -200,6 +200,14 @@ export function PerspectiveSelector({
     custom: { name: 'Custom', description: 'Your custom perspectives' },
   }
 
+  // Handle clicking on a perspective chip to open dropdown and focus on its category
+  const handlePerspectiveChipClick = (e: React.MouseEvent, category: string) => {
+    e.stopPropagation()
+    setActiveCategory(category)
+    setSearchQuery('')
+    setIsOpen(true)
+  }
+
   return (
     <div className="relative">
       {/* Collapsed view - shows selected perspectives */}
@@ -220,7 +228,8 @@ export function PerspectiveSelector({
           {selectedPerspectives.map(perspective => (
             <div
               key={perspective.id}
-              className="px-3 py-1.5 bg-[var(--text)] text-[var(--bg)] rounded-md text-sm flex items-center gap-2"
+              onClick={(e) => handlePerspectiveChipClick(e, perspective.category)}
+              className="px-3 py-1.5 bg-[var(--text)] text-[var(--bg)] rounded-md text-sm flex items-center gap-2 hover:opacity-80 transition"
             >
               <span className="opacity-60">{CATEGORY_ICONS[perspective.category]}</span>
               <span>{perspective.name}</span>
