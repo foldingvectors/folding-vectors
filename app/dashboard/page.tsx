@@ -21,9 +21,18 @@ const PERSPECTIVE_ICONS: Record<string, typeof ChartIcon> = {
   strategy: ArrowIcon,
 }
 
+const LOADING_MESSAGES = [
+  'Loading your analyses...',
+  'Fetching history...',
+  'Gathering your insights...',
+  'Retrieving saved documents...',
+  'Almost ready...',
+]
+
 export default function DashboardPage() {
   const [user, setUser] = useState<User | null>(null)
   const [loading, setLoading] = useState(true)
+  const [loadingMessage, setLoadingMessage] = useState(LOADING_MESSAGES[0])
   const [analyses, setAnalyses] = useState<Analysis[]>([])
   const [totalCount, setTotalCount] = useState(0)
   const [page, setPage] = useState(1)
@@ -48,6 +57,15 @@ export default function DashboardPage() {
 
   const fetchAnalyses = async (pageNum: number) => {
     setLoading(true)
+    setLoadingMessage(LOADING_MESSAGES[0])
+
+    // Cycle through loading messages
+    let messageIndex = 0
+    const messageInterval = setInterval(() => {
+      messageIndex = (messageIndex + 1) % LOADING_MESSAGES.length
+      setLoadingMessage(LOADING_MESSAGES[messageIndex])
+    }, 1500)
+
     try {
       const response = await fetch(`/api/analyses?page=${pageNum}&limit=${limit}`)
       const data = await response.json()
@@ -60,6 +78,7 @@ export default function DashboardPage() {
     } catch (error) {
       console.error('Error fetching analyses:', error)
     } finally {
+      clearInterval(messageInterval)
       setLoading(false)
     }
   }
@@ -134,7 +153,14 @@ export default function DashboardPage() {
   if (!user) {
     return (
       <div className="min-h-screen bg-[var(--bg)] text-[var(--text)] flex items-center justify-center">
-        <div className="opacity-60">Loading...</div>
+        <div className="flex flex-col items-center gap-4 fade-in">
+          <div className="flex gap-1">
+            <span className="w-2 h-2 bg-[var(--text)] rounded-full loading-pulse" style={{ animationDelay: '0s' }} />
+            <span className="w-2 h-2 bg-[var(--text)] rounded-full loading-pulse" style={{ animationDelay: '0.2s' }} />
+            <span className="w-2 h-2 bg-[var(--text)] rounded-full loading-pulse" style={{ animationDelay: '0.4s' }} />
+          </div>
+          <div className="text-sm opacity-60">Authenticating...</div>
+        </div>
       </div>
     )
   }
@@ -192,10 +218,39 @@ export default function DashboardPage() {
 
           {loading ? (
             <div className="space-y-4">
-              {[1, 2, 3].map((i) => (
-                <div key={i} className="border border-[var(--border)] rounded-md p-4">
-                  <div className="h-4 bg-[var(--text)] opacity-10 w-1/2 mb-2" />
-                  <div className="h-3 bg-[var(--text)] opacity-5 w-1/4" />
+              {/* Loading message */}
+              <div className="flex items-center gap-3 mb-6 fade-in">
+                <div className="flex gap-1">
+                  <span className="w-2 h-2 bg-[var(--text)] rounded-full loading-pulse" style={{ animationDelay: '0s' }} />
+                  <span className="w-2 h-2 bg-[var(--text)] rounded-full loading-pulse" style={{ animationDelay: '0.2s' }} />
+                  <span className="w-2 h-2 bg-[var(--text)] rounded-full loading-pulse" style={{ animationDelay: '0.4s' }} />
+                </div>
+                <span className="text-sm opacity-70">{loadingMessage}</span>
+              </div>
+
+              {/* Skeleton cards */}
+              {[1, 2, 3, 4, 5].map((i) => (
+                <div
+                  key={i}
+                  className={`border border-[var(--border)] rounded-md p-4 slide-up stagger-${i}`}
+                  style={{ opacity: 0 }}
+                >
+                  <div className="flex items-center justify-between">
+                    <div className="flex-1">
+                      <div className="h-5 loading-skeleton rounded w-3/5 mb-3" />
+                      <div className="flex items-center gap-4">
+                        <div className="h-3 loading-skeleton rounded w-20" />
+                        <div className="flex gap-2">
+                          <div className="h-4 w-4 loading-skeleton rounded" />
+                          <div className="h-4 w-4 loading-skeleton rounded" />
+                        </div>
+                      </div>
+                    </div>
+                    <div className="flex gap-2">
+                      <div className="h-7 w-16 loading-skeleton rounded" />
+                      <div className="h-7 w-16 loading-skeleton rounded" />
+                    </div>
+                  </div>
                 </div>
               ))}
             </div>

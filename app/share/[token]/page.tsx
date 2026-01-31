@@ -1,13 +1,11 @@
 'use client'
 
 import { useState, useEffect, use } from 'react'
-import { supabase } from '@/lib/supabase'
-import { User } from '@supabase/supabase-js'
 import { useRouter } from 'next/navigation'
 import { ThemeToggle } from '@/components/ThemeToggle'
-import { CheckIcon, CopyIcon, DownloadIcon, ShareIcon } from '@/components/icons'
+import { CheckIcon, CopyIcon, DownloadIcon } from '@/components/icons'
 import { SynthesisView } from '@/components/SynthesisView'
-import { getPerspectiveById, PERSPECTIVE_CATEGORIES } from '@/lib/perspectives'
+import { getPerspectiveById } from '@/lib/perspectives'
 import { exportToPDF, exportToWord, exportSynthesisToPDF, exportSynthesisToWord } from '@/lib/export-utils'
 
 interface Analysis {
@@ -17,7 +15,6 @@ interface Analysis {
   perspectives: string[]
   results: Record<string, string>
   created_at: string
-  status: string
 }
 
 // eslint-disable-next-line @typescript-eslint/no-explicit-any
@@ -30,16 +27,6 @@ const CATEGORY_ICONS: Record<string, string> = {
   compliance: '§',
   technical: '</>',
   human: '♦',
-}
-
-// Copy to clipboard helper
-const copyToClipboard = async (text: string) => {
-  try {
-    await navigator.clipboard.writeText(text)
-    return true
-  } catch {
-    return false
-  }
 }
 
 // Helper to format field labels
@@ -66,7 +53,6 @@ const renderParsedResult = (parsed: ParsedResult) => {
   const summaryKey = Object.keys(parsed).find(k => k.toLowerCase() === 'summary')
   const recommendationKey = Object.keys(parsed).find(k => k.toLowerCase() === 'recommendation')
 
-  // Get all other keys (not summary or recommendation)
   const otherKeys = Object.keys(parsed).filter(k =>
     k.toLowerCase() !== 'summary' && k.toLowerCase() !== 'recommendation'
   )
@@ -76,7 +62,6 @@ const renderParsedResult = (parsed: ParsedResult) => {
 
   return (
     <div className="space-y-6">
-      {/* Summary first */}
       {summaryValue && (
         <div>
           <h3 className="text-xs uppercase tracking-wider opacity-60 mb-2">Summary</h3>
@@ -84,7 +69,6 @@ const renderParsedResult = (parsed: ParsedResult) => {
         </div>
       )}
 
-      {/* All other fields */}
       {otherKeys.map(key => {
         const value = parsed[key]
         if (!value) return null
@@ -117,7 +101,6 @@ const renderParsedResult = (parsed: ParsedResult) => {
         return null
       })}
 
-      {/* Recommendation last */}
       {recommendationValue && (
         <div className="mt-6 pt-6 border-t border-[var(--border)]">
           <h3 className="text-xs uppercase tracking-wider opacity-60 mb-2">Recommendation</h3>
@@ -129,85 +112,31 @@ const renderParsedResult = (parsed: ParsedResult) => {
 }
 
 const LOADING_MESSAGES = [
-  'Loading analysis...',
+  'Loading shared analysis...',
   'Retrieving perspectives...',
   'Fetching insights...',
-  'Preparing results...',
   'Almost ready...',
 ]
 
-export default function AnalysisPage({ params }: { params: Promise<{ id: string }> }) {
-  const { id } = use(params)
-  const [user, setUser] = useState<User | null>(null)
+export default function SharedAnalysisPage({ params }: { params: Promise<{ token: string }> }) {
+  const { token } = use(params)
   const [loading, setLoading] = useState(true)
   const [loadingMessage, setLoadingMessage] = useState(LOADING_MESSAGES[0])
   const [analysis, setAnalysis] = useState<Analysis | null>(null)
+  const [error, setError] = useState<string | null>(null)
   const [copiedId, setCopiedId] = useState<string | null>(null)
   const [viewMode, setViewMode] = useState<'list' | 'synthesis'>('list')
-  const [shareUrl, setShareUrl] = useState<string | null>(null)
-  const [sharing, setSharing] = useState(false)
-  const [shareCopied, setShareCopied] = useState(false)
   const router = useRouter()
 
   useEffect(() => {
-    supabase.auth.getSession().then(({ data: { session } }) => {
-      if (!session?.user) {
-        router.push('/auth/login')
-        return
-      }
-      setUser(session.user)
-      fetchAnalysis()
-      fetchShareStatus()
-    })
+    fetchSharedAnalysis()
   // eslint-disable-next-line react-hooks/exhaustive-deps
-  }, [router])
+  }, [token])
 
-  const fetchShareStatus = async () => {
-    try {
-      const response = await fetch(`/api/analyses/${id}/share`)
-      const data = await response.json()
-      if (response.ok && data.shared) {
-        setShareUrl(data.shareUrl)
-      }
-    } catch (error) {
-      console.error('Error fetching share status:', error)
-    }
-  }
-
-  const handleShare = async () => {
-    setSharing(true)
-    try {
-      const response = await fetch(`/api/analyses/${id}/share`, {
-        method: 'POST',
-      })
-      const data = await response.json()
-      if (response.ok) {
-        setShareUrl(data.shareUrl)
-        // Copy to clipboard
-        await navigator.clipboard.writeText(data.shareUrl)
-        setShareCopied(true)
-        setTimeout(() => setShareCopied(false), 2000)
-      }
-    } catch (error) {
-      console.error('Error creating share link:', error)
-    } finally {
-      setSharing(false)
-    }
-  }
-
-  const handleCopyShareUrl = async () => {
-    if (shareUrl) {
-      await navigator.clipboard.writeText(shareUrl)
-      setShareCopied(true)
-      setTimeout(() => setShareCopied(false), 2000)
-    }
-  }
-
-  const fetchAnalysis = async () => {
+  const fetchSharedAnalysis = async () => {
     setLoading(true)
     setLoadingMessage(LOADING_MESSAGES[0])
 
-    // Cycle through loading messages
     let messageIndex = 0
     const messageInterval = setInterval(() => {
       messageIndex = (messageIndex + 1) % LOADING_MESSAGES.length
@@ -215,17 +144,17 @@ export default function AnalysisPage({ params }: { params: Promise<{ id: string 
     }, 1500)
 
     try {
-      const response = await fetch(`/api/analyses/${id}`)
+      const response = await fetch(`/api/share/${token}`)
       const data = await response.json()
 
       if (response.ok) {
         setAnalysis(data.analysis)
       } else {
-        router.push('/dashboard')
+        setError(data.error || 'Analysis not found')
       }
-    } catch (error) {
-      console.error('Error fetching analysis:', error)
-      router.push('/dashboard')
+    } catch (err) {
+      console.error('Error fetching shared analysis:', err)
+      setError('Failed to load analysis')
     } finally {
       clearInterval(messageInterval)
       setLoading(false)
@@ -233,10 +162,12 @@ export default function AnalysisPage({ params }: { params: Promise<{ id: string 
   }
 
   const handleCopy = async (perspectiveId: string, resultText: string) => {
-    const success = await copyToClipboard(resultText)
-    if (success) {
+    try {
+      await navigator.clipboard.writeText(resultText)
       setCopiedId(perspectiveId)
       setTimeout(() => setCopiedId(null), 2000)
+    } catch {
+      // Ignore clipboard errors
     }
   }
 
@@ -245,14 +176,12 @@ export default function AnalysisPage({ params }: { params: Promise<{ id: string 
       year: 'numeric',
       month: 'long',
       day: 'numeric',
-      hour: '2-digit',
-      minute: '2-digit',
     })
   }
 
-  if (!user || loading) {
+  if (loading) {
     return (
-      <div className="min-h-screen bg-[var(--bg)] text-[var(--text)] p-8">
+      <div className="min-h-screen bg-[var(--bg)] text-[var(--text)] p-4 md:p-8">
         <div className="max-w-4xl mx-auto">
           {/* Header skeleton */}
           <div className="mb-8 fade-in">
@@ -274,24 +203,12 @@ export default function AnalysisPage({ params }: { params: Promise<{ id: string 
             <span className="text-sm opacity-70">{loadingMessage}</span>
           </div>
 
-          {/* Document skeleton */}
-          <div className="mb-8 slide-up stagger-1" style={{ opacity: 0 }}>
-            <div className="h-3 loading-skeleton rounded w-20 mb-2" />
-            <div className="border border-[var(--border)] rounded-md p-4">
-              <div className="space-y-2">
-                <div className="h-3 loading-skeleton rounded w-full" />
-                <div className="h-3 loading-skeleton rounded w-5/6" />
-                <div className="h-3 loading-skeleton rounded w-4/5" />
-              </div>
-            </div>
-          </div>
-
           {/* Results skeleton */}
           <div className="space-y-6">
             {[1, 2, 3].map((i) => (
               <div
                 key={i}
-                className={`border border-[var(--border)] rounded-md slide-up stagger-${i + 1}`}
+                className={`border border-[var(--border)] rounded-md slide-up stagger-${i}`}
                 style={{ opacity: 0 }}
               >
                 <div className="px-6 py-4 border-b border-[var(--border)] flex items-center justify-between">
@@ -302,10 +219,8 @@ export default function AnalysisPage({ params }: { params: Promise<{ id: string 
                       <div className="h-3 loading-skeleton rounded w-48" />
                     </div>
                   </div>
-                  <div className="h-7 w-16 loading-skeleton rounded" />
                 </div>
                 <div className="p-6 space-y-4">
-                  <div className="h-3 loading-skeleton rounded w-16 mb-2" />
                   <div className="h-4 loading-skeleton rounded w-full" />
                   <div className="h-4 loading-skeleton rounded w-5/6" />
                   <div className="h-4 loading-skeleton rounded w-4/5" />
@@ -318,31 +233,45 @@ export default function AnalysisPage({ params }: { params: Promise<{ id: string 
     )
   }
 
-  if (!analysis) {
+  if (error || !analysis) {
     return (
-      <div className="min-h-screen bg-[var(--bg)] text-[var(--text)] flex items-center justify-center">
-        <div className="opacity-60">Analysis not found</div>
+      <div className="min-h-screen bg-[var(--bg)] text-[var(--text)] flex items-center justify-center p-4">
+        <div className="text-center">
+          <h1 className="text-2xl font-light mb-4">Analysis Not Found</h1>
+          <p className="opacity-60 mb-6">{error || 'This shared analysis may have been removed or the link is invalid.'}</p>
+          <button
+            onClick={() => router.push('/')}
+            className="btn-primary px-6 py-2"
+          >
+            Go to Folding Vectors
+          </button>
+        </div>
       </div>
     )
   }
 
   return (
-    <div className="min-h-screen bg-[var(--bg)] text-[var(--text)] p-8">
+    <div className="min-h-screen bg-[var(--bg)] text-[var(--text)] p-4 md:p-8">
       <div className="max-w-4xl mx-auto">
 
         {/* Header */}
-        <div className="mb-8">
+        <div className="mb-8 fade-in">
           <div className="flex items-center justify-between mb-4">
             <button
-              onClick={() => router.push('/dashboard')}
+              onClick={() => router.push('/')}
               className="text-sm opacity-60 hover:opacity-100 transition"
             >
-              Back to Dashboard
+              Folding Vectors
             </button>
-            <ThemeToggle />
+            <div className="flex items-center gap-4">
+              <span className="text-xs px-2 py-1 border border-[var(--border)] rounded opacity-60">
+                Read Only
+              </span>
+              <ThemeToggle />
+            </div>
           </div>
 
-          <h1 className="text-2xl font-light tracking-tight mb-2">
+          <h1 className="text-xl md:text-2xl font-light tracking-tight mb-2">
             {analysis.title}
           </h1>
           <p className="text-sm opacity-60">
@@ -351,7 +280,7 @@ export default function AnalysisPage({ params }: { params: Promise<{ id: string 
         </div>
 
         {/* View Toggle and Export */}
-        <div className="flex items-center justify-between mb-6">
+        <div className="flex flex-col md:flex-row md:items-center justify-between gap-4 mb-6">
           <div className="flex items-center gap-2">
             <button
               onClick={() => setViewMode('synthesis')}
@@ -376,42 +305,15 @@ export default function AnalysisPage({ params }: { params: Promise<{ id: string 
           </div>
 
           <div className="flex items-center gap-2">
-            {shareUrl ? (
-              <button
-                onClick={handleCopyShareUrl}
-                className="px-3 py-2 border border-[var(--border)] rounded-md text-sm flex items-center gap-2 hover:opacity-60 transition"
-              >
-                {shareCopied ? (
-                  <>
-                    <CheckIcon size={14} />
-                    <span>Copied!</span>
-                  </>
-                ) : (
-                  <>
-                    <ShareIcon size={14} />
-                    <span>Copy Link</span>
-                  </>
-                )}
-              </button>
-            ) : (
-              <button
-                onClick={handleShare}
-                disabled={sharing}
-                className="px-3 py-2 border border-[var(--border)] rounded-md text-sm flex items-center gap-2 hover:opacity-60 transition disabled:opacity-40"
-              >
-                <ShareIcon size={14} />
-                <span>{sharing ? 'Creating...' : 'Share'}</span>
-              </button>
-            )}
             <button
-              onClick={() => exportToPDF(analysis.perspectives, analysis.results, analysis.title, user?.email || undefined)}
+              onClick={() => exportToPDF(analysis.perspectives, analysis.results, analysis.title)}
               className="px-3 py-2 border border-[var(--border)] rounded-md text-sm flex items-center gap-2 hover:opacity-60 transition"
             >
               <DownloadIcon size={14} />
               <span>PDF</span>
             </button>
             <button
-              onClick={() => exportToWord(analysis.perspectives, analysis.results, analysis.title, user?.email || undefined)}
+              onClick={() => exportToWord(analysis.perspectives, analysis.results, analysis.title)}
               className="px-3 py-2 border border-[var(--border)] rounded-md text-sm flex items-center gap-2 hover:opacity-60 transition"
             >
               <DownloadIcon size={14} />
@@ -420,36 +322,8 @@ export default function AnalysisPage({ params }: { params: Promise<{ id: string 
           </div>
         </div>
 
-        {/* Share URL display */}
-        {shareUrl && (
-          <div className="mb-6 p-4 border border-[var(--border)] rounded-md bg-[var(--hover-bg)]">
-            <div className="flex items-center justify-between gap-4">
-              <div className="flex-1 min-w-0">
-                <div className="text-xs uppercase tracking-wider opacity-60 mb-1">Shareable Link</div>
-                <div className="text-sm font-mono truncate opacity-80">{shareUrl}</div>
-              </div>
-              <button
-                onClick={handleCopyShareUrl}
-                className="px-3 py-1.5 border border-[var(--border)] rounded-md text-xs flex items-center gap-2 hover:opacity-60 transition shrink-0"
-              >
-                {shareCopied ? (
-                  <>
-                    <CheckIcon size={12} />
-                    <span>Copied!</span>
-                  </>
-                ) : (
-                  <>
-                    <CopyIcon size={12} />
-                    <span>Copy</span>
-                  </>
-                )}
-              </button>
-            </div>
-          </div>
-        )}
-
         {/* Document Preview */}
-        <div className="mb-8">
+        <div className="mb-8 slide-up" style={{ animationDelay: '0.1s' }}>
           <h2 className="text-xs uppercase tracking-wider opacity-60 mb-2">
             Document
           </h2>
@@ -463,7 +337,7 @@ export default function AnalysisPage({ params }: { params: Promise<{ id: string 
         {/* Results */}
         {viewMode === 'list' ? (
           <div className="space-y-6">
-            {analysis.perspectives.map((perspectiveId) => {
+            {analysis.perspectives.map((perspectiveId, index) => {
               const perspective = getPerspectiveById(perspectiveId)
               const resultText = analysis.results[perspectiveId]
 
@@ -481,14 +355,18 @@ export default function AnalysisPage({ params }: { params: Promise<{ id: string 
               }
 
               return (
-                <div key={perspectiveId} className="border border-[var(--border)] rounded-md">
+                <div
+                  key={perspectiveId}
+                  className="border border-[var(--border)] rounded-md slide-up"
+                  style={{ animationDelay: `${0.1 * (index + 1)}s`, opacity: 0 }}
+                >
                   {/* Header */}
-                  <div className="px-6 py-4 border-b border-[var(--border)] flex items-center justify-between">
+                  <div className="px-4 md:px-6 py-4 border-b border-[var(--border)] flex items-center justify-between">
                     <div className="flex items-center gap-3">
                       <span className="text-lg">{CATEGORY_ICONS[perspective.category]}</span>
                       <div>
                         <div className="font-medium">{perspective.name}</div>
-                        <div className="text-xs opacity-60">{perspective.coreFocus}</div>
+                        <div className="text-xs opacity-60 hidden md:block">{perspective.coreFocus}</div>
                       </div>
                     </div>
                     <button
@@ -510,7 +388,7 @@ export default function AnalysisPage({ params }: { params: Promise<{ id: string 
                   </div>
 
                   {/* Content */}
-                  <div className="p-6">
+                  <div className="p-4 md:p-6">
                     {parsedResult ? (
                       renderParsedResult(parsedResult)
                     ) : (
@@ -524,15 +402,28 @@ export default function AnalysisPage({ params }: { params: Promise<{ id: string 
             })}
           </div>
         ) : (
-          <div className="border border-[var(--border)] rounded-md p-6">
+          <div className="border border-[var(--border)] rounded-md p-4 md:p-6 slide-up" style={{ animationDelay: '0.1s', opacity: 0 }}>
             <SynthesisView
               perspectives={analysis.perspectives}
               results={analysis.results}
-              onExportPDF={() => exportSynthesisToPDF(analysis.perspectives, analysis.results, `${analysis.title} Synthesis`, user?.email || undefined)}
-              onExportWord={() => exportSynthesisToWord(analysis.perspectives, analysis.results, `${analysis.title} Synthesis`, user?.email || undefined)}
+              onExportPDF={() => exportSynthesisToPDF(analysis.perspectives, analysis.results, `${analysis.title} Synthesis`)}
+              onExportWord={() => exportSynthesisToWord(analysis.perspectives, analysis.results, `${analysis.title} Synthesis`)}
             />
           </div>
         )}
+
+        {/* Footer */}
+        <div className="mt-12 pt-8 border-t border-[var(--border)] text-center">
+          <p className="text-sm opacity-60 mb-4">
+            Analyzed with Folding Vectors
+          </p>
+          <button
+            onClick={() => router.push('/')}
+            className="btn-primary px-6 py-2 text-sm"
+          >
+            Try Folding Vectors
+          </button>
+        </div>
 
       </div>
     </div>

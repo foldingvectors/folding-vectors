@@ -4,7 +4,7 @@ import { useState, useEffect } from 'react'
 import { supabase } from '@/lib/supabase'
 import { User } from '@supabase/supabase-js'
 import { useRouter } from 'next/navigation'
-import { CheckIcon, CopyIcon, DownloadIcon } from '@/components/icons'
+import { CheckIcon, CopyIcon, DownloadIcon, ShareIcon } from '@/components/icons'
 import { ThemeToggle } from '@/components/ThemeToggle'
 import { SynthesisView } from '@/components/SynthesisView'
 import { exportToPDF, exportToWord, exportSynthesisToPDF, exportSynthesisToWord } from '@/lib/export-utils'
@@ -186,6 +186,10 @@ export default function Home() {
   const [uploadingFile, setUploadingFile] = useState(false)
   const [fileName, setFileName] = useState<string | null>(null)
   const [examplesOpen, setExamplesOpen] = useState(false)
+  const [analysisId, setAnalysisId] = useState<string | null>(null)
+  const [shareUrl, setShareUrl] = useState<string | null>(null)
+  const [sharing, setSharing] = useState(false)
+  const [shareCopied, setShareCopied] = useState(false)
 
   const fetchUsageInfo = async () => {
     if (!user) return
@@ -211,6 +215,8 @@ export default function Home() {
     setError('')
     setResults({})
     setLoadingPhase(0)
+    setAnalysisId(null)
+    setShareUrl(null)
 
     // Loading messages that cycle through
     const loadingMessages = [
@@ -248,6 +254,7 @@ export default function Home() {
 
       if (response.ok) {
         setResults(data.results)
+        setAnalysisId(data.analysisId)
         fetchUsageInfo()
       } else {
         if (data.error === 'limit_reached') {
@@ -286,6 +293,36 @@ export default function Home() {
       await copyToClipboard(resultText)
       setCopiedId(perspectiveId)
       setTimeout(() => setCopiedId(null), 2000)
+    }
+  }
+
+  const handleShare = async () => {
+    if (!analysisId) return
+
+    setSharing(true)
+    try {
+      const response = await fetch(`/api/analyses/${analysisId}/share`, {
+        method: 'POST',
+      })
+      const data = await response.json()
+      if (response.ok) {
+        setShareUrl(data.shareUrl)
+        await navigator.clipboard.writeText(data.shareUrl)
+        setShareCopied(true)
+        setTimeout(() => setShareCopied(false), 2000)
+      }
+    } catch (error) {
+      console.error('Error creating share link:', error)
+    } finally {
+      setSharing(false)
+    }
+  }
+
+  const handleCopyShareUrl = async () => {
+    if (shareUrl) {
+      await navigator.clipboard.writeText(shareUrl)
+      setShareCopied(true)
+      setTimeout(() => setShareCopied(false), 2000)
     }
   }
 
@@ -934,9 +971,67 @@ export default function Home() {
                     <DownloadIcon size={14} />
                     <span>Word</span>
                   </button>
+
+                  {analysisId && (
+                    shareUrl ? (
+                      <button
+                        onClick={handleCopyShareUrl}
+                        className="px-4 py-2 border border-[var(--border)] rounded-md text-sm flex items-center gap-2 hover:opacity-60 transition"
+                      >
+                        {shareCopied ? (
+                          <>
+                            <CheckIcon size={14} />
+                            <span>Copied!</span>
+                          </>
+                        ) : (
+                          <>
+                            <ShareIcon size={14} />
+                            <span>Copy Link</span>
+                          </>
+                        )}
+                      </button>
+                    ) : (
+                      <button
+                        onClick={handleShare}
+                        disabled={sharing}
+                        className="px-4 py-2 border border-[var(--border)] rounded-md text-sm flex items-center gap-2 hover:opacity-60 transition disabled:opacity-40"
+                      >
+                        <ShareIcon size={14} />
+                        <span>{sharing ? 'Creating...' : 'Share'}</span>
+                      </button>
+                    )
+                  )}
                 </div>
               )}
             </div>
+
+            {/* Share URL display */}
+            {shareUrl && (
+              <div className="mb-6 p-4 border border-[var(--border)] rounded-md bg-[var(--hover-bg)]">
+                <div className="flex flex-col md:flex-row md:items-center justify-between gap-4">
+                  <div className="flex-1 min-w-0">
+                    <div className="text-xs uppercase tracking-wider opacity-60 mb-1">Shareable Link</div>
+                    <div className="text-sm font-mono truncate opacity-80">{shareUrl}</div>
+                  </div>
+                  <button
+                    onClick={handleCopyShareUrl}
+                    className="px-3 py-1.5 border border-[var(--border)] rounded-md text-xs flex items-center gap-2 hover:opacity-60 transition shrink-0"
+                  >
+                    {shareCopied ? (
+                      <>
+                        <CheckIcon size={12} />
+                        <span>Copied!</span>
+                      </>
+                    ) : (
+                      <>
+                        <CopyIcon size={12} />
+                        <span>Copy</span>
+                      </>
+                    )}
+                  </button>
+                </div>
+              </div>
+            )}
 
             {loading && (
               <div className="space-y-6">
