@@ -25,9 +25,9 @@ export default function Home() {
         </p>
 
         {/* Status */}
-        <div className="inline-block bg-slate-800/50 border border-slate-700 rounded-full px-6 py-3 mb-8">
+        <div className="inline-block bg-slate-800/50 border border-slate-700 rounded-full px-6 py-3 mb-8 backdrop-blur-sm">
           <p className="text-slate-300 text-sm font-medium">
-            🚧 Building in public • Launching Q1 2025
+            ✨ Building in public • Launching Q1 2025
           </p>
         </div>
 
