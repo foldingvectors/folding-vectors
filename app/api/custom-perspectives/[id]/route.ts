@@ -1,5 +1,4 @@
-import { createRouteHandlerClient } from '@supabase/auth-helpers-nextjs'
-import { cookies } from 'next/headers'
+import { createServerClient } from '@/lib/supabase-server'
 import { NextRequest, NextResponse } from 'next/server'
 
 interface RouteParams {
@@ -8,12 +7,12 @@ interface RouteParams {
 
 // GET - Get a single custom perspective
 export async function GET(request: NextRequest, { params }: RouteParams) {
-  const supabase = createRouteHandlerClient({ cookies })
+  const supabase = await createServerClient()
   const { id } = await params
 
-  const { data: { session } } = await supabase.auth.getSession()
+  const { data: { user }, error: authError } = await supabase.auth.getUser()
 
-  if (!session) {
+  if (authError || !user) {
     return NextResponse.json({ error: 'Unauthorized' }, { status: 401 })
   }
 
@@ -21,7 +20,7 @@ export async function GET(request: NextRequest, { params }: RouteParams) {
     .from('custom_perspectives')
     .select('*')
     .eq('id', id)
-    .eq('user_id', session.user.id)
+    .eq('user_id', user.id)
     .single()
 
   if (error || !perspective) {
@@ -33,12 +32,12 @@ export async function GET(request: NextRequest, { params }: RouteParams) {
 
 // PATCH - Update a custom perspective
 export async function PATCH(request: NextRequest, { params }: RouteParams) {
-  const supabase = createRouteHandlerClient({ cookies })
+  const supabase = await createServerClient()
   const { id } = await params
 
-  const { data: { session } } = await supabase.auth.getSession()
+  const { data: { user }, error: authError } = await supabase.auth.getUser()
 
-  if (!session) {
+  if (authError || !user) {
     return NextResponse.json({ error: 'Unauthorized' }, { status: 401 })
   }
 
@@ -64,7 +63,7 @@ export async function PATCH(request: NextRequest, { params }: RouteParams) {
     .from('custom_perspectives')
     .update(updates)
     .eq('id', id)
-    .eq('user_id', session.user.id)
+    .eq('user_id', user.id)
     .select()
     .single()
 
@@ -77,12 +76,12 @@ export async function PATCH(request: NextRequest, { params }: RouteParams) {
 
 // DELETE - Delete a custom perspective
 export async function DELETE(request: NextRequest, { params }: RouteParams) {
-  const supabase = createRouteHandlerClient({ cookies })
+  const supabase = await createServerClient()
   const { id } = await params
 
-  const { data: { session } } = await supabase.auth.getSession()
+  const { data: { user }, error: authError } = await supabase.auth.getUser()
 
-  if (!session) {
+  if (authError || !user) {
     return NextResponse.json({ error: 'Unauthorized' }, { status: 401 })
   }
 
@@ -90,7 +89,7 @@ export async function DELETE(request: NextRequest, { params }: RouteParams) {
     .from('custom_perspectives')
     .delete()
     .eq('id', id)
-    .eq('user_id', session.user.id)
+    .eq('user_id', user.id)
 
   if (error) {
     return NextResponse.json({ error: error.message }, { status: 500 })

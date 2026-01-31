@@ -1,21 +1,20 @@
-import { createRouteHandlerClient } from '@supabase/auth-helpers-nextjs'
-import { cookies } from 'next/headers'
+import { createServerClient } from '@/lib/supabase-server'
 import { NextRequest, NextResponse } from 'next/server'
 
 // GET - List all custom perspectives for the user
 export async function GET() {
-  const supabase = createRouteHandlerClient({ cookies })
+  const supabase = await createServerClient()
 
-  const { data: { session } } = await supabase.auth.getSession()
+  const { data: { user }, error: authError } = await supabase.auth.getUser()
 
-  if (!session) {
+  if (authError || !user) {
     return NextResponse.json({ error: 'Unauthorized' }, { status: 401 })
   }
 
   const { data: perspectives, error } = await supabase
     .from('custom_perspectives')
     .select('*')
-    .eq('user_id', session.user.id)
+    .eq('user_id', user.id)
     .order('created_at', { ascending: false })
 
   if (error) {
@@ -27,11 +26,11 @@ export async function GET() {
 
 // POST - Create a new custom perspective
 export async function POST(request: NextRequest) {
-  const supabase = createRouteHandlerClient({ cookies })
+  const supabase = await createServerClient()
 
-  const { data: { session } } = await supabase.auth.getSession()
+  const { data: { user }, error: authError } = await supabase.auth.getUser()
 
-  if (!session) {
+  if (authError || !user) {
     return NextResponse.json({ error: 'Unauthorized' }, { status: 401 })
   }
 
@@ -50,7 +49,7 @@ export async function POST(request: NextRequest) {
   const { count } = await supabase
     .from('custom_perspectives')
     .select('*', { count: 'exact', head: true })
-    .eq('user_id', session.user.id)
+    .eq('user_id', user.id)
 
   if (count && count >= 10) {
     return NextResponse.json({ error: 'Maximum of 10 custom perspectives allowed' }, { status: 400 })
@@ -59,7 +58,7 @@ export async function POST(request: NextRequest) {
   const { data: perspective, error } = await supabase
     .from('custom_perspectives')
     .insert({
-      user_id: session.user.id,
+      user_id: user.id,
       name: name.trim(),
       prompt: prompt.trim(),
     })
