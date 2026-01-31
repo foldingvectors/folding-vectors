@@ -167,7 +167,7 @@ Risks:
 Investment Required: 15M EUR over 24 months`
 }
 
-const DOCUMENT_CHAR_LIMIT = 10000
+const DOCUMENT_CHAR_LIMIT = 50000
 
 export default function Home() {
   const [user, setUser] = useState<User | null>(null)
