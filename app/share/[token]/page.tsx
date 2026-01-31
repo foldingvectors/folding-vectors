@@ -28,6 +28,7 @@ const CATEGORY_ICONS: Record<string, string> = {
   compliance: '§',
   technical: '</>',
   human: '♦',
+  custom: '★',
 }
 
 // Helper to format field labels
@@ -327,10 +328,16 @@ export default function SharedAnalysisPage({ params }: { params: Promise<{ token
         {viewMode === 'list' ? (
           <div className="space-y-6">
             {analysis.perspectives.map((perspectiveId, index) => {
-              const perspective = getPerspectiveById(perspectiveId)
+              const isCustom = perspectiveId.startsWith('custom:')
+              const perspective = !isCustom ? getPerspectiveById(perspectiveId) : null
               const resultText = analysis.results[perspectiveId]
 
-              if (!resultText || !perspective) return null
+              if (!resultText) return null
+              if (!isCustom && !perspective) return null
+
+              const perspectiveName = isCustom ? 'Custom Perspective' : perspective!.name
+              const perspectiveDescription = isCustom ? 'Custom perspective' : perspective!.coreFocus
+              const categoryIcon = isCustom ? CATEGORY_ICONS.custom : CATEGORY_ICONS[perspective!.category]
 
               let parsedResult: ParsedResult | null = null
               try {
@@ -352,10 +359,15 @@ export default function SharedAnalysisPage({ params }: { params: Promise<{ token
                   {/* Header */}
                   <div className="px-4 md:px-6 py-4 border-b border-[var(--border)] flex items-center justify-between">
                     <div className="flex items-center gap-3">
-                      <span className="text-lg">{CATEGORY_ICONS[perspective.category]}</span>
+                      <span className="text-lg">{categoryIcon}</span>
                       <div>
-                        <div className="font-medium">{perspective.name}</div>
-                        <div className="text-xs opacity-60 hidden md:block">{perspective.coreFocus}</div>
+                        <div className="font-medium flex items-center gap-2">
+                          {perspectiveName}
+                          {isCustom && (
+                            <span className="text-xs px-1.5 py-0.5 border border-[var(--border)] rounded opacity-60">Custom</span>
+                          )}
+                        </div>
+                        <div className="text-xs opacity-60 hidden md:block">{perspectiveDescription}</div>
                       </div>
                     </div>
                     <button

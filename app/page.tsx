@@ -631,7 +631,7 @@ export default function Home() {
               <div className="fade-in stagger-1">
                 <h4 className="font-medium mb-3">20+ Perspectives</h4>
                 <p className="text-sm opacity-60">
-                  From Investor to Ethicist, Legal Counsel to Devil's Advocate. Choose up to 5 viewpoints for each analysis.
+                  From Investor to Ethicist, Legal Counsel to Devil's Advocate. Choose up to 5 viewpoints for each analysis, or create yours.
                 </p>
               </div>
               <div className="fade-in stagger-2">
@@ -1137,7 +1137,7 @@ export default function Home() {
                             <div className="font-medium flex items-center gap-2">
                               {perspectiveName}
                               {isCustom && (
-                                <span className="text-xs px-1.5 py-0.5 bg-[var(--text)] bg-opacity-10 rounded">Custom</span>
+                                <span className="text-xs px-1.5 py-0.5 border border-[var(--border)] rounded opacity-60">Custom</span>
                               )}
                             </div>
                             <div className="text-xs opacity-60">{perspectiveDescription}</div>
