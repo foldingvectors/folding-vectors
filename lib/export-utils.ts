@@ -63,7 +63,7 @@ export async function exportToPDF(
   doc.text(recipient || 'Decision Makers', margin + 20, yPos)
   yPos += 6
   doc.text(`FROM:`, margin, yPos)
-  doc.text(`Folding Vectors Analysis`, margin + 20, yPos)
+  doc.text(`Folding Vectors`, margin + 20, yPos)
   yPos += 6
   doc.text(`DATE:`, margin, yPos)
   doc.text(new Date().toLocaleDateString('en-US', { year: 'numeric', month: 'long', day: 'numeric' }), margin + 20, yPos)
@@ -225,7 +225,7 @@ export async function exportToWord(
             children: [new Paragraph({ children: [new TextRun({ text: 'FROM:', bold: true, size: 20 })] })],
           }),
           new TableCell({
-            children: [new Paragraph({ children: [new TextRun({ text: 'Folding Vectors Analysis', size: 20 })] })],
+            children: [new Paragraph({ children: [new TextRun({ text: 'Folding Vectors', size: 20 })] })],
           }),
         ],
       }),
@@ -352,7 +352,7 @@ export async function exportToWord(
     new Paragraph({
       children: [
         new TextRun({
-          text: 'CONFIDENTIAL  |  Folding Vectors Analysis',
+          text: 'CONFIDENTIAL  |  Folding Vectors',
           color: '666666',
           size: 16,
         }),
@@ -530,7 +530,7 @@ export async function exportSynthesisToPDF(
   doc.text(recipient || 'Decision Makers', margin + 20, yPos)
   yPos += 6
   doc.text(`FROM:`, margin, yPos)
-  doc.text(`Folding Vectors Analysis`, margin + 20, yPos)
+  doc.text(`Folding Vectors`, margin + 20, yPos)
   yPos += 6
   doc.text(`DATE:`, margin, yPos)
   doc.text(new Date().toLocaleDateString('en-US', { year: 'numeric', month: 'long', day: 'numeric' }), margin + 20, yPos)
@@ -568,9 +568,14 @@ export async function exportSynthesisToPDF(
     doc.text(`${s.name}: ${s.score}/10`, margin, yPos)
     yPos += 5
     doc.setFont('helvetica', 'normal')
-    const lines = doc.splitTextToSize(s.summary.slice(0, 150) + (s.summary.length > 150 ? '...' : ''), contentWidth - 10)
-    doc.text(lines, margin + 5, yPos)
-    yPos += lines.length * 4 + 5
+    // Full summary without truncation
+    const lines = doc.splitTextToSize(s.summary, contentWidth - 10)
+    lines.forEach((line: string) => {
+      if (yPos > 270) { doc.addPage(); yPos = margin }
+      doc.text(line, margin + 5, yPos)
+      yPos += 4
+    })
+    yPos += 5
   })
   yPos += 5
 
@@ -669,7 +674,7 @@ export async function exportSynthesisToWord(
       ]}),
       new TableRow({ children: [
         new TableCell({ children: [new Paragraph({ children: [new TextRun({ text: 'FROM:', bold: true, size: 20 })] })] }),
-        new TableCell({ children: [new Paragraph({ children: [new TextRun({ text: 'Folding Vectors Analysis', size: 20 })] })] }),
+        new TableCell({ children: [new Paragraph({ children: [new TextRun({ text: 'Folding Vectors', size: 20 })] })] }),
       ]}),
       new TableRow({ children: [
         new TableCell({ children: [new Paragraph({ children: [new TextRun({ text: 'DATE:', bold: true, size: 20 })] })] }),
@@ -775,7 +780,7 @@ export async function exportSynthesisToWord(
   )
   children.push(
     new Paragraph({
-      children: [new TextRun({ text: 'CONFIDENTIAL  |  Folding Vectors Analysis', color: '666666', size: 16 })],
+      children: [new TextRun({ text: 'CONFIDENTIAL  |  Folding Vectors', color: '666666', size: 16 })],
       alignment: AlignmentType.CENTER,
       spacing: { before: 100 },
     })

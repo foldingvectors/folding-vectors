@@ -461,19 +461,19 @@ export default function Home() {
     return (
       <div className="min-h-screen bg-[var(--bg)] text-[var(--text)]">
         {/* Header */}
-        <div className="p-8">
+        <div className="p-4 md:p-8">
           <div className="max-w-7xl mx-auto">
             <div className="flex items-center justify-between mb-6">
               <div>
-                <h1 className="text-4xl font-light tracking-tight mb-1">
+                <h1 className="text-2xl md:text-4xl font-light tracking-tight mb-1">
                   Folding Vectors
                 </h1>
               </div>
-              <div className="flex items-center gap-4">
+              <div className="flex items-center gap-2 md:gap-4">
                 <ThemeToggle />
                 <button
                   onClick={() => router.push('/auth/login')}
-                  className="btn-primary px-6 py-2 text-sm font-medium"
+                  className="btn-primary px-4 md:px-6 py-2 text-sm font-medium"
                 >
                   Sign In
                 </button>
@@ -484,25 +484,25 @@ export default function Home() {
         </div>
 
         {/* Hero Section */}
-        <div className="px-8 py-16">
-          <div className="max-w-3xl mx-auto text-center">
-            <h2 className="text-5xl font-light tracking-tight mb-6">
+        <div className="px-4 md:px-8 py-12 md:py-16">
+          <div className="max-w-3xl mx-auto text-center fade-in">
+            <h2 className="text-3xl md:text-5xl font-light tracking-tight mb-6">
               Fold complexity into clarity
             </h2>
-            <p className="text-xl opacity-60">
+            <p className="text-lg md:text-xl opacity-60">
               Multi-perspective analysis for important documents.
             </p>
-            <p className="text-xl opacity-60">
+            <p className="text-lg md:text-xl opacity-60">
               See what you might be missing.
             </p>
           </div>
         </div>
 
         {/* Manifesto Section */}
-        <div className="px-8 py-16 border-t border-[var(--border)]">
-          <div className="max-w-3xl mx-auto">
+        <div className="px-4 md:px-8 py-12 md:py-16 border-t border-[var(--border)]">
+          <div className="max-w-3xl mx-auto slide-up">
             <h3 className="text-xs uppercase tracking-wider opacity-60 mb-6">Why Folding Vectors</h3>
-            <div className="space-y-6 text-lg leading-relaxed">
+            <div className="space-y-4 md:space-y-6 text-base md:text-lg leading-relaxed">
               <p>
                 We gravitate toward perspectives that confirm what we already believe. It feels good to be right. But when stakes are high, confirmation bias becomes expensive.
               </p>
@@ -520,22 +520,22 @@ export default function Home() {
         </div>
 
         {/* Features */}
-        <div className="px-8 py-16 border-t border-[var(--border)]">
+        <div className="px-4 md:px-8 py-12 md:py-16 border-t border-[var(--border)]">
           <div className="max-w-5xl mx-auto">
-            <div className="grid md:grid-cols-3 gap-12">
-              <div>
+            <div className="grid md:grid-cols-3 gap-8 md:gap-12">
+              <div className="fade-in stagger-1">
                 <h4 className="font-medium mb-3">20+ Perspectives</h4>
                 <p className="text-sm opacity-60">
                   From Investor to Ethicist, Legal Counsel to Devil's Advocate. Choose up to 5 viewpoints for each analysis.
                 </p>
               </div>
-              <div>
+              <div className="fade-in stagger-2">
                 <h4 className="font-medium mb-3">Synthesis View</h4>
                 <p className="text-sm opacity-60">
                   See where perspectives agree and where they clash. Identify the tensions that deserve your attention.
                 </p>
               </div>
-              <div>
+              <div className="fade-in stagger-3">
                 <h4 className="font-medium mb-3">Export Ready</h4>
                 <p className="text-sm opacity-60">
                   Professional memo format in PDF or Word. Share with your team or keep for your records.
@@ -546,13 +546,13 @@ export default function Home() {
         </div>
 
         {/* CTA */}
-        <div className="px-8 py-16 border-t border-[var(--border)]">
+        <div className="px-4 md:px-8 py-12 md:py-16 border-t border-[var(--border)]">
           <div className="max-w-3xl mx-auto text-center">
-            <h3 className="text-2xl font-light mb-4">Start analyzing with fresh eyes</h3>
-            <p className="opacity-60 mb-8">Free to try. No credit card required.</p>
+            <h3 className="text-xl md:text-2xl font-light mb-4">Start analyzing with fresh eyes</h3>
+            <p className="opacity-60 mb-6 md:mb-8">Free to try. No credit card required.</p>
             <button
               onClick={() => router.push('/auth/login')}
-              className="btn-primary px-8 py-4 text-lg font-medium"
+              className="btn-primary px-6 md:px-8 py-3 md:py-4 text-base md:text-lg font-medium w-full md:w-auto"
             >
               Try Now
             </button>
@@ -560,14 +560,14 @@ export default function Home() {
         </div>
 
         {/* Footer */}
-        <div className="px-8 py-8 border-t border-[var(--border)]">
+        <div className="px-4 md:px-8 py-6 md:py-8 border-t border-[var(--border)]">
           <div className="max-w-7xl mx-auto">
-            <div className="flex flex-col md:flex-row items-center justify-between gap-6">
-              <div className="text-sm opacity-60">
+            <div className="flex flex-col items-center gap-4 md:flex-row md:justify-between md:gap-6">
+              <div className="text-xs md:text-sm opacity-60 text-center md:text-left">
                 Folding Vectors - Multi-perspective analysis in seconds
               </div>
-              <div className="flex items-center gap-6">
-                <a href="mailto:hello@foldingvectors.com" className="text-sm opacity-60 hover:opacity-100 transition">
+              <div className="flex flex-col md:flex-row items-center gap-4 md:gap-6">
+                <a href="mailto:hello@foldingvectors.com" className="text-xs md:text-sm opacity-60 hover:opacity-100 transition">
                   hello@foldingvectors.com
                 </a>
                 <div className="flex items-center gap-4">
@@ -614,28 +614,28 @@ export default function Home() {
   }
 
   return (
-    <div className="min-h-screen bg-[var(--bg)] text-[var(--text)] p-8">
+    <div className="min-h-screen bg-[var(--bg)] text-[var(--text)] p-4 md:p-8">
       <div className="max-w-7xl mx-auto">
 
         {/* Header */}
-        <div className="mb-12">
-          <div className="flex items-center justify-between mb-6">
+        <div className="mb-8 md:mb-12">
+          <div className="flex flex-col md:flex-row md:items-center justify-between gap-4 mb-6">
             <div>
-              <h1 className="text-4xl font-light tracking-tight mb-1">
+              <h1 className="text-2xl md:text-4xl font-light tracking-tight mb-1">
                 Folding Vectors
               </h1>
-              <p className="text-sm opacity-60">
+              <p className="text-xs md:text-sm opacity-60">
                 Multi-perspective document analysis
               </p>
             </div>
 
-            <div className="flex items-center gap-4">
+            <div className="flex items-center gap-2 md:gap-4">
               <ThemeToggle />
               {loadingAuth ? (
-                <div className="opacity-40">Loading...</div>
+                <div className="opacity-40 loading-pulse">Loading...</div>
               ) : user ? (
-                <div className="flex items-center gap-6">
-                  <div className="text-right">
+                <div className="flex items-center gap-2 md:gap-6">
+                  <div className="text-right hidden md:block">
                     <div className="text-sm">{user.email}</div>
                     {usageInfo && (
                       <div className="text-xs opacity-60">
@@ -645,13 +645,13 @@ export default function Home() {
                   </div>
                   <button
                     onClick={() => router.push('/dashboard')}
-                    className="px-4 py-2 border border-[var(--border)] rounded-md text-sm hover:opacity-60 transition"
+                    className="px-3 md:px-4 py-2 border border-[var(--border)] rounded-md text-xs md:text-sm hover:opacity-60 transition"
                   >
                     Dashboard
                   </button>
                   <button
                     onClick={handleSignOut}
-                    className="px-4 py-2 border border-[var(--border)] rounded-md text-sm hover:opacity-60 transition"
+                    className="px-3 md:px-4 py-2 border border-[var(--border)] rounded-md text-xs md:text-sm hover:opacity-60 transition"
                   >
                     Sign Out
                   </button>
@@ -659,7 +659,7 @@ export default function Home() {
               ) : (
                 <button
                   onClick={() => router.push('/auth/login')}
-                  className="btn-primary px-6 py-2 text-sm font-medium"
+                  className="btn-primary px-4 md:px-6 py-2 text-sm font-medium"
                 >
                   Sign In
                 </button>
@@ -669,7 +669,7 @@ export default function Home() {
           <div className="border-b border-[var(--border)]" />
         </div>
 
-        <div className="grid lg:grid-cols-3 gap-12">
+        <div className="grid lg:grid-cols-3 gap-6 md:gap-12">
 
           {/* Left: Input */}
           <div className="lg:col-span-1 space-y-6">
@@ -914,21 +914,25 @@ export default function Home() {
 
             {loading && (
               <div className="space-y-6">
-                {selectedPerspectives.map((perspectiveId) => {
+                {selectedPerspectives.map((perspectiveId, index) => {
                   const perspective = getPerspectiveById(perspectiveId)
                   return (
-                    <div key={perspectiveId} className="border border-[var(--border)] rounded-md">
-                      <div className="px-6 py-4 border-b border-[var(--border)] flex items-center gap-3">
-                        <div className="w-5 h-5 bg-[var(--text)] opacity-10 rounded" />
+                    <div
+                      key={perspectiveId}
+                      className="border border-[var(--border)] rounded-md fade-in"
+                      style={{ animationDelay: `${index * 0.1}s` }}
+                    >
+                      <div className="px-4 md:px-6 py-4 border-b border-[var(--border)] flex items-center gap-3">
+                        <div className="w-5 h-5 loading-skeleton rounded" />
                         <div className="flex-1">
-                          <div className="h-4 bg-[var(--text)] opacity-10 w-32 mb-2" />
-                          <div className="h-3 bg-[var(--text)] opacity-5 w-48" />
+                          <div className="h-4 loading-skeleton w-32 mb-2 rounded" />
+                          <div className="h-3 loading-skeleton w-48 rounded" />
                         </div>
                       </div>
-                      <div className="p-6 space-y-4">
-                        <div className="h-4 bg-[var(--text)] opacity-10 w-full" />
-                        <div className="h-4 bg-[var(--text)] opacity-10 w-5/6" />
-                        <div className="h-4 bg-[var(--text)] opacity-10 w-4/6" />
+                      <div className="p-4 md:p-6 space-y-4">
+                        <div className="h-4 loading-skeleton w-full rounded" />
+                        <div className="h-4 loading-skeleton w-5/6 rounded" />
+                        <div className="h-4 loading-skeleton w-4/6 rounded" />
                       </div>
                     </div>
                   )
