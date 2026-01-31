@@ -167,11 +167,6 @@ Risks:
 Investment Required: 15M EUR over 24 months`
 }
 
-// Admin emails with unlimited document length
-const UNLIMITED_EMAILS = [
-  'hello@foldingvectors.com',
-  'adrien.lafeuille@gmail.com',
-]
 const DOCUMENT_CHAR_LIMIT = 10000
 
 export default function Home() {
@@ -212,9 +207,6 @@ export default function Home() {
     }
   }
 
-  // Check if user has unlimited document length
-  const isUnlimitedUser = user?.email && UNLIMITED_EMAILS.includes(user.email)
-
   const analyze = async () => {
     if (!text.trim()) {
       setError('Please enter some text to analyze')
@@ -222,8 +214,8 @@ export default function Home() {
     }
 
     // Check document length limit
-    if (!isUnlimitedUser && text.length > DOCUMENT_CHAR_LIMIT) {
-      setError(`Document exceeds ${DOCUMENT_CHAR_LIMIT.toLocaleString()} character limit. Please shorten your document or contact us for unlimited access.`)
+    if (text.length > DOCUMENT_CHAR_LIMIT) {
+      setError(`Document exceeds ${DOCUMENT_CHAR_LIMIT.toLocaleString()} character limit. Please shorten your document.`)
       return
     }
 
@@ -436,8 +428,8 @@ export default function Home() {
 
       if (extractedText.trim()) {
         // Check document length limit for file uploads
-        if (!isUnlimitedUser && extractedText.length > DOCUMENT_CHAR_LIMIT) {
-          setError(`Uploaded file exceeds ${DOCUMENT_CHAR_LIMIT.toLocaleString()} character limit (${extractedText.length.toLocaleString()} characters). Please use a shorter document or contact us for unlimited access.`)
+        if (extractedText.length > DOCUMENT_CHAR_LIMIT) {
+          setError(`Uploaded file exceeds ${DOCUMENT_CHAR_LIMIT.toLocaleString()} character limit (${extractedText.length.toLocaleString()} characters). Please use a shorter document.`)
           return
         }
         setText(extractedText)
@@ -723,7 +715,7 @@ export default function Home() {
                     <div className="text-sm">{user.email}</div>
                     {usageInfo && (
                       <div className="text-xs opacity-60">
-                        {usageInfo.limit - usageInfo.count} analyses remaining
+                        {usageInfo.limit - usageInfo.count} {usageInfo.limit - usageInfo.count === 1 ? 'analysis' : 'analyses'} remaining
                       </div>
                     )}
                   </div>
@@ -905,9 +897,9 @@ export default function Home() {
 
               {/* Character counter */}
               {text.length > 0 && (
-                <div className={`text-xs mt-2 ${!isUnlimitedUser && text.length > DOCUMENT_CHAR_LIMIT ? 'text-red-500' : 'opacity-60'}`}>
-                  {text.length.toLocaleString()} / {isUnlimitedUser ? 'unlimited' : DOCUMENT_CHAR_LIMIT.toLocaleString()} characters
-                  {!isUnlimitedUser && text.length > DOCUMENT_CHAR_LIMIT && (
+                <div className={`text-xs mt-2 ${text.length > DOCUMENT_CHAR_LIMIT ? 'text-red-500' : 'opacity-60'}`}>
+                  {text.length.toLocaleString()} / {DOCUMENT_CHAR_LIMIT.toLocaleString()} characters
+                  {text.length > DOCUMENT_CHAR_LIMIT && (
                     <span className="ml-2">(exceeds limit)</span>
                   )}
                 </div>
