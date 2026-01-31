@@ -413,8 +413,10 @@ export function PerspectiveSelector({
                       >
                         <div className="flex items-center gap-2">
                           <span className="font-medium">{perspective.name}</span>
-                          <span className={`text-xs px-1.5 py-0.5 rounded ${
-                            isSelected ? 'bg-[var(--bg)] text-[var(--text)] bg-opacity-20' : 'bg-[var(--text)] bg-opacity-10'
+                          <span className={`text-xs px-1.5 py-0.5 rounded border ${
+                            isSelected
+                              ? 'border-[var(--bg)] border-opacity-40 text-[var(--bg)]'
+                              : 'border-[var(--border)] text-[var(--text)] opacity-60'
                           }`}>
                             Custom
                           </span>
@@ -495,8 +497,10 @@ export function PerspectiveSelector({
                         <div className="flex items-center gap-2">
                           <span className="font-medium">{perspective.name}</span>
                           {searchQuery && (
-                            <span className={`text-xs px-1.5 py-0.5 rounded ${
-                              isSelected ? 'bg-[var(--bg)] text-[var(--text)] bg-opacity-20' : 'bg-[var(--text)] bg-opacity-10'
+                            <span className={`text-xs px-1.5 py-0.5 rounded border ${
+                              isSelected
+                                ? 'border-[var(--bg)] border-opacity-40 text-[var(--bg)]'
+                                : 'border-[var(--border)] text-[var(--text)] opacity-60'
                             }`}>
                               {PERSPECTIVE_CATEGORIES[perspective.category as keyof typeof PERSPECTIVE_CATEGORIES]?.name}
                             </span>
