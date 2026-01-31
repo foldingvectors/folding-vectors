@@ -178,6 +178,8 @@ export default function Home() {
   const [selectedPerspectives, setSelectedPerspectives] = useState<string[]>(DEFAULT_PERSPECTIVES)
   const [results, setResults] = useState<Record<string, string>>({})
   const [loading, setLoading] = useState(false)
+  const [loadingMessage, setLoadingMessage] = useState('')
+  const [loadingPhase, setLoadingPhase] = useState(0)
   const [error, setError] = useState('')
   const [copiedId, setCopiedId] = useState<string | null>(null)
   const [viewMode, setViewMode] = useState<'list' | 'synthesis'>('list')
@@ -208,6 +210,28 @@ export default function Home() {
     setLoading(true)
     setError('')
     setResults({})
+    setLoadingPhase(0)
+
+    // Loading messages that cycle through
+    const loadingMessages = [
+      'Sending document to Claude...',
+      'Analyzing from multiple viewpoints...',
+      'Examining key details...',
+      'Identifying opportunities and risks...',
+      'Cross-referencing perspectives...',
+      'Synthesizing insights...',
+      'Preparing your analysis...',
+      'Almost there...',
+    ]
+
+    // Start cycling through messages
+    setLoadingMessage(loadingMessages[0])
+    let messageIndex = 0
+    const messageInterval = setInterval(() => {
+      messageIndex = (messageIndex + 1) % loadingMessages.length
+      setLoadingMessage(loadingMessages[messageIndex])
+      setLoadingPhase(prev => prev + 1)
+    }, 2500)
 
     try {
       const response = await fetch('/api/analyze', {
@@ -235,7 +259,9 @@ export default function Home() {
     } catch {
       setError('Network error - please try again')
     } finally {
+      clearInterval(messageInterval)
       setLoading(false)
+      setLoadingMessage('')
     }
   }
 
@@ -923,11 +949,14 @@ export default function Home() {
                       style={{ animationDelay: `${index * 0.1}s` }}
                     >
                       <div className="px-4 md:px-6 py-4 border-b border-[var(--border)] flex items-center gap-3">
-                        <div className="w-5 h-5 loading-skeleton rounded" />
-                        <div className="flex-1">
-                          <div className="h-4 loading-skeleton w-32 mb-2 rounded" />
-                          <div className="h-3 loading-skeleton w-48 rounded" />
+                        <div className="w-8 h-8 border border-[var(--border)] rounded-md flex items-center justify-center text-xs font-medium loading-pulse">
+                          {perspective?.name.charAt(0) || '?'}
                         </div>
+                        <div className="flex-1">
+                          <div className="font-medium text-sm loading-pulse">{perspective?.name || 'Loading...'}</div>
+                          <div className="text-xs opacity-40">{perspective?.coreFocus || 'Analyzing...'}</div>
+                        </div>
+                        <div className="text-xs opacity-40 loading-pulse">Processing...</div>
                       </div>
                       <div className="p-4 md:p-6 space-y-4">
                         <div className="h-4 loading-skeleton w-full rounded" />
@@ -938,8 +967,18 @@ export default function Home() {
                   )
                 })}
 
-                <div className="text-center text-sm opacity-60 mt-6">
-                  Analyzing with {selectedPerspectives.length} perspective{selectedPerspectives.length > 1 ? 's' : ''}...
+                <div className="text-center mt-6 space-y-3">
+                  <div className="flex items-center justify-center gap-2">
+                    <div className="w-2 h-2 bg-[var(--text)] rounded-full loading-pulse" />
+                    <div className="w-2 h-2 bg-[var(--text)] rounded-full loading-pulse" style={{ animationDelay: '0.3s' }} />
+                    <div className="w-2 h-2 bg-[var(--text)] rounded-full loading-pulse" style={{ animationDelay: '0.6s' }} />
+                  </div>
+                  <p className="text-sm font-medium fade-in" key={loadingPhase}>
+                    {loadingMessage || `Analyzing with ${selectedPerspectives.length} perspective${selectedPerspectives.length > 1 ? 's' : ''}...`}
+                  </p>
+                  <p className="text-xs opacity-40">
+                    {selectedPerspectives.map(id => getPerspectiveById(id)?.name).filter(Boolean).join(' · ')}
+                  </p>
                 </div>
               </div>
             )}
