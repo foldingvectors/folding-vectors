@@ -167,6 +167,13 @@ Risks:
 Investment Required: 15M EUR over 24 months`
 }
 
+// Admin emails with unlimited document length
+const UNLIMITED_EMAILS = [
+  'hello@foldingvectors.com',
+  'adrien.lafeuille@gmail.com',
+]
+const DOCUMENT_CHAR_LIMIT = 10000
+
 export default function Home() {
   const [user, setUser] = useState<User | null>(null)
   const [loadingAuth, setLoadingAuth] = useState(true)
@@ -205,9 +212,18 @@ export default function Home() {
     }
   }
 
+  // Check if user has unlimited document length
+  const isUnlimitedUser = user?.email && UNLIMITED_EMAILS.includes(user.email)
+
   const analyze = async () => {
     if (!text.trim()) {
       setError('Please enter some text to analyze')
+      return
+    }
+
+    // Check document length limit
+    if (!isUnlimitedUser && text.length > DOCUMENT_CHAR_LIMIT) {
+      setError(`Document exceeds ${DOCUMENT_CHAR_LIMIT.toLocaleString()} character limit. Please shorten your document or contact us for unlimited access.`)
       return
     }
 
@@ -419,6 +435,11 @@ export default function Home() {
       }
 
       if (extractedText.trim()) {
+        // Check document length limit for file uploads
+        if (!isUnlimitedUser && extractedText.length > DOCUMENT_CHAR_LIMIT) {
+          setError(`Uploaded file exceeds ${DOCUMENT_CHAR_LIMIT.toLocaleString()} character limit (${extractedText.length.toLocaleString()} characters). Please use a shorter document or contact us for unlimited access.`)
+          return
+        }
         setText(extractedText)
       } else {
         setError('Could not extract text from the file. Please try pasting the content directly.')
@@ -881,6 +902,16 @@ export default function Home() {
                 placeholder="Or paste your document here..."
                 className="w-full h-64 px-4 py-3 bg-transparent border border-[var(--border)] rounded-md text-[var(--text)] placeholder:opacity-40 focus:outline-none focus:ring-1 focus:ring-[var(--text)] font-mono text-sm resize-none"
               />
+
+              {/* Character counter */}
+              {text.length > 0 && (
+                <div className={`text-xs mt-2 ${!isUnlimitedUser && text.length > DOCUMENT_CHAR_LIMIT ? 'text-red-500' : 'opacity-60'}`}>
+                  {text.length.toLocaleString()} / {isUnlimitedUser ? 'unlimited' : DOCUMENT_CHAR_LIMIT.toLocaleString()} characters
+                  {!isUnlimitedUser && text.length > DOCUMENT_CHAR_LIMIT && (
+                    <span className="ml-2">(exceeds limit)</span>
+                  )}
+                </div>
+              )}
             </div>
 
             <button
