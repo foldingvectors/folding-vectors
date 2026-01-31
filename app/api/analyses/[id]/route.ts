@@ -45,6 +45,57 @@ export async function GET(
   }
 }
 
+export async function PATCH(
+  request: Request,
+  { params }: { params: Promise<{ id: string }> }
+) {
+  const supabase = await createServerClient()
+  const { id } = await params
+
+  try {
+    // Check authentication
+    const { data: { user }, error: authError } = await supabase.auth.getUser()
+
+    if (authError || !user) {
+      return NextResponse.json(
+        { error: 'Please sign in to update analysis' },
+        { status: 401 }
+      )
+    }
+
+    const { title } = await request.json()
+
+    if (!title || typeof title !== 'string' || title.trim().length === 0) {
+      return NextResponse.json(
+        { error: 'Title is required' },
+        { status: 400 }
+      )
+    }
+
+    // Verify ownership and update
+    const { data: analysis, error } = await supabase
+      .from('analyses')
+      .update({ title: title.trim() })
+      .eq('id', id)
+      .eq('user_email', user.email)
+      .select()
+      .single()
+
+    if (error) {
+      throw error
+    }
+
+    return NextResponse.json({ analysis })
+  } catch (error: unknown) {
+    console.error('Error updating analysis:', error)
+    const errorMessage = error instanceof Error ? error.message : 'Failed to update analysis'
+    return NextResponse.json(
+      { error: errorMessage },
+      { status: 500 }
+    )
+  }
+}
+
 export async function DELETE(
   request: Request,
   { params }: { params: Promise<{ id: string }> }

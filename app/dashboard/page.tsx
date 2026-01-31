@@ -28,6 +28,9 @@ export default function DashboardPage() {
   const [totalCount, setTotalCount] = useState(0)
   const [page, setPage] = useState(1)
   const [deleting, setDeleting] = useState<string | null>(null)
+  const [editingId, setEditingId] = useState<string | null>(null)
+  const [editingTitle, setEditingTitle] = useState('')
+  const [saving, setSaving] = useState(false)
   const router = useRouter()
 
   const limit = 10
@@ -81,6 +84,41 @@ export default function DashboardPage() {
     } finally {
       setDeleting(null)
     }
+  }
+
+  const handleRename = (analysis: Analysis) => {
+    setEditingId(analysis.id)
+    setEditingTitle(analysis.title)
+  }
+
+  const handleSaveRename = async () => {
+    if (!editingId || !editingTitle.trim()) return
+
+    setSaving(true)
+    try {
+      const response = await fetch(`/api/analyses/${editingId}`, {
+        method: 'PATCH',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({ title: editingTitle.trim() }),
+      })
+
+      if (response.ok) {
+        setAnalyses(analyses.map(a =>
+          a.id === editingId ? { ...a, title: editingTitle.trim() } : a
+        ))
+        setEditingId(null)
+        setEditingTitle('')
+      }
+    } catch (error) {
+      console.error('Error renaming analysis:', error)
+    } finally {
+      setSaving(false)
+    }
+  }
+
+  const handleCancelRename = () => {
+    setEditingId(null)
+    setEditingTitle('')
   }
 
   const formatDate = (dateString: string) => {
@@ -178,28 +216,69 @@ export default function DashboardPage() {
                   key={analysis.id}
                   className="border border-[var(--border)] rounded-md p-4 flex items-center justify-between hover:opacity-80 transition"
                 >
-                  <div
-                    className="flex-1 cursor-pointer"
-                    onClick={() => router.push(`/dashboard/analysis/${analysis.id}`)}
-                  >
-                    <div className="font-medium mb-1">{analysis.title}</div>
-                    <div className="flex items-center gap-4 text-xs opacity-60">
-                      <span>{formatDate(analysis.created_at)}</span>
-                      <div className="flex items-center gap-2">
-                        {analysis.perspectives.map((p) => {
-                          const Icon = PERSPECTIVE_ICONS[p] || ChartIcon
-                          return <Icon key={p} size={14} />
-                        })}
-                      </div>
+                  {editingId === analysis.id ? (
+                    <div className="flex-1 flex items-center gap-2">
+                      <input
+                        type="text"
+                        value={editingTitle}
+                        onChange={(e) => setEditingTitle(e.target.value)}
+                        onKeyDown={(e) => {
+                          if (e.key === 'Enter') handleSaveRename()
+                          if (e.key === 'Escape') handleCancelRename()
+                        }}
+                        className="flex-1 px-2 py-1 bg-transparent border border-[var(--border)] rounded text-sm focus:outline-none focus:ring-1 focus:ring-[var(--text)]"
+                        autoFocus
+                        disabled={saving}
+                      />
+                      <button
+                        onClick={handleSaveRename}
+                        disabled={saving}
+                        className="px-2 py-1 border border-[var(--border)] rounded text-xs hover:opacity-60 transition disabled:opacity-40"
+                      >
+                        {saving ? '...' : 'Save'}
+                      </button>
+                      <button
+                        onClick={handleCancelRename}
+                        disabled={saving}
+                        className="px-2 py-1 border border-[var(--border)] rounded text-xs hover:opacity-60 transition disabled:opacity-40"
+                      >
+                        Cancel
+                      </button>
                     </div>
-                  </div>
-                  <button
-                    onClick={() => handleDelete(analysis.id)}
-                    disabled={deleting === analysis.id}
-                    className="px-3 py-1 border border-[var(--border)] rounded-md text-xs hover:opacity-60 transition disabled:opacity-40"
-                  >
-                    {deleting === analysis.id ? '...' : 'Delete'}
-                  </button>
+                  ) : (
+                    <>
+                      <div
+                        className="flex-1 cursor-pointer"
+                        onClick={() => router.push(`/dashboard/analysis/${analysis.id}`)}
+                      >
+                        <div className="font-medium mb-1">{analysis.title}</div>
+                        <div className="flex items-center gap-4 text-xs opacity-60">
+                          <span>{formatDate(analysis.created_at)}</span>
+                          <div className="flex items-center gap-2">
+                            {analysis.perspectives.map((p) => {
+                              const Icon = PERSPECTIVE_ICONS[p] || ChartIcon
+                              return <Icon key={p} size={14} />
+                            })}
+                          </div>
+                        </div>
+                      </div>
+                      <div className="flex items-center gap-2">
+                        <button
+                          onClick={() => handleRename(analysis)}
+                          className="px-3 py-1 border border-[var(--border)] rounded-md text-xs hover:opacity-60 transition"
+                        >
+                          Rename
+                        </button>
+                        <button
+                          onClick={() => handleDelete(analysis.id)}
+                          disabled={deleting === analysis.id}
+                          className="px-3 py-1 border border-[var(--border)] rounded-md text-xs hover:opacity-60 transition disabled:opacity-40"
+                        >
+                          {deleting === analysis.id ? '...' : 'Delete'}
+                        </button>
+                      </div>
+                    </>
+                  )}
                 </div>
               ))}
             </div>

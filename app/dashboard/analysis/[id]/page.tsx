@@ -20,150 +20,8 @@ interface Analysis {
   status: string
 }
 
-// Extended ParsedResult to handle all 20 perspectives
-interface ParsedResult {
-  // Common
-  summary?: string
-  recommendation?: string
-  recommendations?: string[]
-  questions?: string[]
-
-  // Investor
-  opportunities?: string[]
-  risks?: string[]
-
-  // Customer
-  pain_points_addressed?: string[]
-  value_gaps?: string[]
-  buying_objections?: string[]
-  competitive_comparison?: string
-
-  // Pragmatist
-  resource_requirements?: string[]
-  execution_risks?: string[]
-  hidden_costs?: string[]
-  timeline_reality?: string
-
-  // Strategist
-  competitive_position?: string
-  strategic_risks?: string[]
-
-  // Competitor
-  attack_vectors?: string[]
-  copyable_elements?: string[]
-  true_moats?: string[]
-  vulnerabilities?: string[]
-  timeline_to_compete?: string
-
-  // Futurist
-  tailwinds?: string[]
-  headwinds?: string[]
-  disruption_risks?: string[]
-  adaptation_needed?: string[]
-  ten_year_verdict?: string
-
-  // Systems Thinker
-  dependencies?: string[]
-  ripple_effects?: string[]
-  feedback_loops?: string[]
-  stakeholder_impacts?: string[]
-  systemic_risks?: string[]
-
-  // Historian
-  precedents?: string[]
-  patterns?: string[]
-  lessons?: string[]
-  whats_different?: string[]
-  historical_warnings?: string[]
-
-  // Legal
-  red_flags?: string[]
-  compliance?: string[]
-  liability_exposure?: string[]
-
-  // Auditor
-  verification_needed?: string[]
-  data_concerns?: string[]
-  compliance_gaps?: string[]
-  documentation_issues?: string[]
-  audit_opinion?: string
-
-  // Ethicist
-  fairness_concerns?: string[]
-  bias_risks?: string[]
-  social_impact?: string[]
-  transparency_gaps?: string[]
-  ethical_verdict?: string
-
-  // Environmentalist
-  footprint_concerns?: string[]
-  sustainability_gaps?: string[]
-  green_opportunities?: string[]
-  climate_risks?: string[]
-  environmental_verdict?: string
-
-  // Security Expert
-  privacy_risks?: string[]
-  security_gaps?: string[]
-  security_verdict?: string
-
-  // Technologist
-  tech_strengths?: string[]
-  tech_debt?: string[]
-  scalability?: string
-  innovation_level?: string
-  obsolescence_risks?: string[]
-  technical_verdict?: string
-
-  // Data Scientist
-  data_strengths?: string[]
-  measurement_gaps?: string[]
-  statistical_concerns?: string[]
-  data_opportunities?: string[]
-  data_verdict?: string
-
-  // End-User Support
-  friction_points?: string[]
-  confusion_areas?: string[]
-  onboarding_issues?: string[]
-  support_drivers?: string[]
-  ux_verdict?: string
-
-  // Skeptic
-  logical_gaps?: string[]
-  happy_path_assumptions?: string[]
-  cherry_picking?: string[]
-  unstated_risks?: string[]
-  skeptic_verdict?: string
-
-  // Crisis Manager
-  crisis_scenarios?: string[]
-  failure_modes?: string[]
-  reputation_risks?: string[]
-  preparedness_gaps?: string[]
-  crisis_verdict?: string
-
-  // Storyteller
-  story_strengths?: string[]
-  emotional_hooks?: string[]
-  narrative_gaps?: string[]
-  memorability?: string
-  storytelling_verdict?: string
-
-  // HR/Culturalist
-  morale_impacts?: string[]
-  talent_implications?: string[]
-  culture_fit?: string
-  change_challenges?: string[]
-  people_verdict?: string
-
-  // Globalist
-  cultural_challenges?: string[]
-  regional_differences?: string[]
-  localization_needs?: string[]
-  global_regulations?: string[]
-  global_verdict?: string
-}
+// eslint-disable-next-line @typescript-eslint/no-explicit-any
+type ParsedResult = Record<string, any>
 
 // Category icons
 const CATEGORY_ICONS: Record<string, string> = {
@@ -184,42 +42,88 @@ const copyToClipboard = async (text: string) => {
   }
 }
 
-// Helper to render array fields
-function renderArrayField(items: string[] | undefined, label: string, icon: string, highlight = false) {
-  if (!Array.isArray(items) || items.length === 0) return null
-  return (
-    <div>
-      <h3 className="text-xs uppercase tracking-wider opacity-60 mb-3">
-        {label}
-      </h3>
-      <ul className="space-y-2">
-        {items.map((item: string, i: number) => (
-          <li
-            key={i}
-            className={`flex items-start gap-3 ${
-              highlight ? 'p-3 border border-[var(--border)] rounded-md' : ''
-            }`}
-          >
-            <span className="opacity-40">{icon}</span>
-            <span>{item}</span>
-          </li>
-        ))}
-      </ul>
-    </div>
-  )
+// Helper to format field labels
+const formatFieldLabel = (key: string): string => {
+  return key
+    .replace(/_/g, ' ')
+    .replace(/([A-Z])/g, ' $1')
+    .trim()
 }
 
-// Helper to render string fields
-function renderStringField(value: string | undefined, label: string) {
-  if (!value) return null
+// Get icon for field type
+const getFieldIcon = (key: string): string => {
+  const keyLower = key.toLowerCase()
+  if (keyLower.includes('opportunit') || keyLower.includes('strength') || keyLower.includes('tailwind') || keyLower.includes('green')) return '+'
+  if (keyLower.includes('risk') || keyLower.includes('gap') || keyLower.includes('concern') || keyLower.includes('headwind') || keyLower.includes('weakness')) return '-'
+  if (keyLower.includes('flag') || keyLower.includes('critical') || keyLower.includes('attack') || keyLower.includes('vulnerab')) return '!'
+  if (keyLower.includes('question')) return '?'
+  if (keyLower.includes('recommend')) return '>'
+  return '*'
+}
+
+// Render all fields from parsed result dynamically
+const renderParsedResult = (parsed: ParsedResult) => {
+  const summaryKey = Object.keys(parsed).find(k => k.toLowerCase() === 'summary')
+  const recommendationKey = Object.keys(parsed).find(k => k.toLowerCase() === 'recommendation')
+
+  // Get all other keys (not summary or recommendation)
+  const otherKeys = Object.keys(parsed).filter(k =>
+    k.toLowerCase() !== 'summary' && k.toLowerCase() !== 'recommendation'
+  )
+
+  const summaryValue = summaryKey ? parsed[summaryKey] : null
+  const recommendationValue = recommendationKey ? parsed[recommendationKey] : null
+
   return (
-    <div>
-      <h3 className="text-xs uppercase tracking-wider opacity-60 mb-2">
-        {label}
-      </h3>
-      <p className="leading-relaxed">
-        {value}
-      </p>
+    <div className="space-y-6">
+      {/* Summary first */}
+      {summaryValue && (
+        <div>
+          <h3 className="text-xs uppercase tracking-wider opacity-60 mb-2">Summary</h3>
+          <p className="leading-relaxed">{String(summaryValue)}</p>
+        </div>
+      )}
+
+      {/* All other fields */}
+      {otherKeys.map(key => {
+        const value = parsed[key]
+        if (!value) return null
+
+        const label = formatFieldLabel(key)
+        const icon = getFieldIcon(key)
+
+        if (Array.isArray(value) && value.length > 0) {
+          return (
+            <div key={key}>
+              <h3 className="text-xs uppercase tracking-wider opacity-60 mb-3">{label}</h3>
+              <ul className="space-y-2">
+                {(value as string[]).map((item: string, i: number) => (
+                  <li key={i} className="flex items-start gap-3">
+                    <span className="opacity-40">{icon}</span>
+                    <span>{String(item)}</span>
+                  </li>
+                ))}
+              </ul>
+            </div>
+          )
+        } else if (typeof value === 'string') {
+          return (
+            <div key={key}>
+              <h3 className="text-xs uppercase tracking-wider opacity-60 mb-2">{label}</h3>
+              <p className="leading-relaxed">{value}</p>
+            </div>
+          )
+        }
+        return null
+      })}
+
+      {/* Recommendation last */}
+      {recommendationValue && (
+        <div className="mt-6 pt-6 border-t border-[var(--border)]">
+          <h3 className="text-xs uppercase tracking-wider opacity-60 mb-2">Recommendation</h3>
+          <p className="font-medium">{String(recommendationValue)}</p>
+        </div>
+      )}
     </div>
   )
 }
@@ -429,131 +333,7 @@ export default function AnalysisPage({ params }: { params: Promise<{ id: string 
                   {/* Content */}
                   <div className="p-6">
                     {parsedResult ? (
-                      <div className="space-y-6">
-                        {/* Summary - common to all */}
-                        {parsedResult.summary && (
-                          <div>
-                            <h3 className="text-xs uppercase tracking-wider opacity-60 mb-2">
-                              Summary
-                            </h3>
-                            <p className="leading-relaxed">
-                              {parsedResult.summary}
-                            </p>
-                          </div>
-                        )}
-
-                        {/* Render all array fields dynamically */}
-                        {renderArrayField(parsedResult.opportunities, 'Opportunities', '+')}
-                        {renderArrayField(parsedResult.risks, 'Risks', '-')}
-                        {renderArrayField(parsedResult.strategic_risks, 'Strategic Risks', '-')}
-                        {renderArrayField(parsedResult.red_flags, 'Critical Issues', '!', true)}
-                        {renderArrayField(parsedResult.compliance, 'Compliance Issues', '*')}
-                        {renderArrayField(parsedResult.questions, 'Critical Questions', '?')}
-                        {renderArrayField(parsedResult.recommendations, 'Recommendations', '>')}
-                        {renderArrayField(parsedResult.pain_points_addressed, 'Pain Points Addressed', '+')}
-                        {renderArrayField(parsedResult.value_gaps, 'Value Gaps', '-')}
-                        {renderArrayField(parsedResult.buying_objections, 'Buying Objections', '-')}
-                        {renderArrayField(parsedResult.resource_requirements, 'Resource Requirements', '*')}
-                        {renderArrayField(parsedResult.execution_risks, 'Execution Risks', '-')}
-                        {renderArrayField(parsedResult.hidden_costs, 'Hidden Costs', '$')}
-                        {renderArrayField(parsedResult.attack_vectors, 'Attack Vectors', '!')}
-                        {renderArrayField(parsedResult.copyable_elements, 'Copyable Elements', '~')}
-                        {renderArrayField(parsedResult.true_moats, 'True Moats', '+')}
-                        {renderArrayField(parsedResult.vulnerabilities, 'Vulnerabilities', '-')}
-                        {renderArrayField(parsedResult.tailwinds, 'Tailwinds', '+')}
-                        {renderArrayField(parsedResult.headwinds, 'Headwinds', '-')}
-                        {renderArrayField(parsedResult.disruption_risks, 'Disruption Risks', '!')}
-                        {renderArrayField(parsedResult.adaptation_needed, 'Adaptation Needed', '>')}
-                        {renderArrayField(parsedResult.dependencies, 'Dependencies', '*')}
-                        {renderArrayField(parsedResult.ripple_effects, 'Ripple Effects', '~')}
-                        {renderArrayField(parsedResult.feedback_loops, 'Feedback Loops', '∞')}
-                        {renderArrayField(parsedResult.stakeholder_impacts, 'Stakeholder Impacts', '•')}
-                        {renderArrayField(parsedResult.systemic_risks, 'Systemic Risks', '-')}
-                        {renderArrayField(parsedResult.precedents, 'Precedents', '«')}
-                        {renderArrayField(parsedResult.patterns, 'Patterns', '~')}
-                        {renderArrayField(parsedResult.lessons, 'Lessons', '+')}
-                        {renderArrayField(parsedResult.whats_different, "What's Different", '!')}
-                        {renderArrayField(parsedResult.historical_warnings, 'Historical Warnings', '-')}
-                        {renderArrayField(parsedResult.liability_exposure, 'Liability Exposure', '!')}
-                        {renderArrayField(parsedResult.verification_needed, 'Verification Needed', '?')}
-                        {renderArrayField(parsedResult.data_concerns, 'Data Concerns', '-')}
-                        {renderArrayField(parsedResult.compliance_gaps, 'Compliance Gaps', '!')}
-                        {renderArrayField(parsedResult.documentation_issues, 'Documentation Issues', '*')}
-                        {renderArrayField(parsedResult.fairness_concerns, 'Fairness Concerns', '-')}
-                        {renderArrayField(parsedResult.bias_risks, 'Bias Risks', '!')}
-                        {renderArrayField(parsedResult.social_impact, 'Social Impact', '•')}
-                        {renderArrayField(parsedResult.transparency_gaps, 'Transparency Gaps', '-')}
-                        {renderArrayField(parsedResult.footprint_concerns, 'Footprint Concerns', '-')}
-                        {renderArrayField(parsedResult.sustainability_gaps, 'Sustainability Gaps', '-')}
-                        {renderArrayField(parsedResult.green_opportunities, 'Green Opportunities', '+')}
-                        {renderArrayField(parsedResult.climate_risks, 'Climate Risks', '!')}
-                        {renderArrayField(parsedResult.privacy_risks, 'Privacy Risks', '!')}
-                        {renderArrayField(parsedResult.security_gaps, 'Security Gaps', '-')}
-                        {renderArrayField(parsedResult.tech_strengths, 'Technical Strengths', '+')}
-                        {renderArrayField(parsedResult.tech_debt, 'Technical Debt', '-')}
-                        {renderArrayField(parsedResult.obsolescence_risks, 'Obsolescence Risks', '!')}
-                        {renderArrayField(parsedResult.data_strengths, 'Data Strengths', '+')}
-                        {renderArrayField(parsedResult.measurement_gaps, 'Measurement Gaps', '-')}
-                        {renderArrayField(parsedResult.statistical_concerns, 'Statistical Concerns', '?')}
-                        {renderArrayField(parsedResult.data_opportunities, 'Data Opportunities', '+')}
-                        {renderArrayField(parsedResult.friction_points, 'Friction Points', '-')}
-                        {renderArrayField(parsedResult.confusion_areas, 'Confusion Areas', '?')}
-                        {renderArrayField(parsedResult.onboarding_issues, 'Onboarding Issues', '-')}
-                        {renderArrayField(parsedResult.support_drivers, 'Support Drivers', '!')}
-                        {renderArrayField(parsedResult.logical_gaps, 'Logical Gaps', '!')}
-                        {renderArrayField(parsedResult.happy_path_assumptions, 'Happy Path Assumptions', '-')}
-                        {renderArrayField(parsedResult.cherry_picking, 'Cherry Picking', '-')}
-                        {renderArrayField(parsedResult.unstated_risks, 'Unstated Risks', '!')}
-                        {renderArrayField(parsedResult.crisis_scenarios, 'Crisis Scenarios', '!')}
-                        {renderArrayField(parsedResult.failure_modes, 'Failure Modes', '-')}
-                        {renderArrayField(parsedResult.reputation_risks, 'Reputation Risks', '!')}
-                        {renderArrayField(parsedResult.preparedness_gaps, 'Preparedness Gaps', '-')}
-                        {renderArrayField(parsedResult.story_strengths, 'Story Strengths', '+')}
-                        {renderArrayField(parsedResult.emotional_hooks, 'Emotional Hooks', '♥')}
-                        {renderArrayField(parsedResult.narrative_gaps, 'Narrative Gaps', '-')}
-                        {renderArrayField(parsedResult.morale_impacts, 'Morale Impacts', '•')}
-                        {renderArrayField(parsedResult.talent_implications, 'Talent Implications', '•')}
-                        {renderArrayField(parsedResult.change_challenges, 'Change Challenges', '-')}
-                        {renderArrayField(parsedResult.cultural_challenges, 'Cultural Challenges', '-')}
-                        {renderArrayField(parsedResult.regional_differences, 'Regional Differences', '•')}
-                        {renderArrayField(parsedResult.localization_needs, 'Localization Needs', '*')}
-                        {renderArrayField(parsedResult.global_regulations, 'Global Regulations', '§')}
-
-                        {/* String fields */}
-                        {renderStringField(parsedResult.competitive_position, 'Competitive Position')}
-                        {renderStringField(parsedResult.competitive_comparison, 'Competitive Comparison')}
-                        {renderStringField(parsedResult.timeline_reality, 'Timeline Reality')}
-                        {renderStringField(parsedResult.timeline_to_compete, 'Timeline to Compete')}
-                        {renderStringField(parsedResult.ten_year_verdict, 'Ten Year Verdict')}
-                        {renderStringField(parsedResult.audit_opinion, 'Audit Opinion')}
-                        {renderStringField(parsedResult.ethical_verdict, 'Ethical Verdict')}
-                        {renderStringField(parsedResult.environmental_verdict, 'Environmental Verdict')}
-                        {renderStringField(parsedResult.security_verdict, 'Security Verdict')}
-                        {renderStringField(parsedResult.scalability, 'Scalability')}
-                        {renderStringField(parsedResult.innovation_level, 'Innovation Level')}
-                        {renderStringField(parsedResult.technical_verdict, 'Technical Verdict')}
-                        {renderStringField(parsedResult.data_verdict, 'Data Verdict')}
-                        {renderStringField(parsedResult.ux_verdict, 'UX Verdict')}
-                        {renderStringField(parsedResult.skeptic_verdict, 'Skeptic Verdict')}
-                        {renderStringField(parsedResult.crisis_verdict, 'Crisis Verdict')}
-                        {renderStringField(parsedResult.memorability, 'Memorability')}
-                        {renderStringField(parsedResult.storytelling_verdict, 'Storytelling Verdict')}
-                        {renderStringField(parsedResult.culture_fit, 'Culture Fit')}
-                        {renderStringField(parsedResult.people_verdict, 'People Verdict')}
-                        {renderStringField(parsedResult.global_verdict, 'Global Verdict')}
-
-                        {/* Final recommendation */}
-                        {parsedResult.recommendation && (
-                          <div className="mt-6 pt-6 border-t border-[var(--border)]">
-                            <h3 className="text-xs uppercase tracking-wider opacity-60 mb-2">
-                              Recommendation
-                            </h3>
-                            <p className="font-medium">
-                              {parsedResult.recommendation}
-                            </p>
-                          </div>
-                        )}
-                      </div>
+                      renderParsedResult(parsedResult)
                     ) : (
                       <pre className="text-sm whitespace-pre-wrap font-mono opacity-80">
                         {resultText}
