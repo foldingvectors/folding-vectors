@@ -24,9 +24,43 @@ Be direct, skeptical, and focus on what matters for investment returns.
 Document to analyze:
 `
 
+const LEGAL_PROMPT = `You are a senior corporate attorney reviewing this document for legal risks and compliance issues.
+
+Analyze the following document and provide a structured analysis in JSON format:
+
+{
+  "summary": "2-3 sentence legal assessment",
+  "risks": ["legal risk 1", "legal risk 2", "legal risk 3"],
+  "compliance": ["compliance issue 1", "compliance issue 2"],
+  "recommendations": ["legal action 1", "legal action 2", "legal action 3"],
+  "red_flags": ["critical issue 1", "critical issue 2"]
+}
+
+Be practical, focus on deal-killers and major liabilities. Prioritize by severity.
+
+Document to analyze:
+`
+
+const STRATEGY_PROMPT = `You are a strategy consultant evaluating competitive position and market dynamics.
+
+Analyze the following document and provide a structured analysis in JSON format:
+
+{
+  "summary": "2-3 sentence strategic assessment",
+  "competitive_position": "Assessment of market position and advantages",
+  "strategic_risks": ["strategic risk 1", "strategic risk 2", "strategic risk 3"],
+  "opportunities": ["strategic opportunity 1", "strategic opportunity 2"],
+  "recommendations": ["strategic recommendation 1", "strategic recommendation 2", "strategic recommendation 3"]
+}
+
+Be frank about competitive dynamics and market realities. Focus on sustainable advantages.
+
+Document to analyze:
+`
+
 export async function POST(request: Request) {
   try {
-    const { text, email } = await request.json()
+    const { text, email, perspectives = ['investor'] } = await request.json()
 
     if (!text || text.trim().length === 0) {
       return NextResponse.json(
@@ -35,20 +69,51 @@ export async function POST(request: Request) {
       )
     }
 
-    // Call Claude API
-    const message = await anthropic.messages.create({
-      model: 'claude-sonnet-4-20250514',
-      max_tokens: 4096,
-      messages: [{
-        role: 'user',
-        content: INVESTOR_PROMPT + text
-      }]
+    if (!perspectives || perspectives.length === 0) {
+      return NextResponse.json(
+        { error: 'At least one perspective is required' },
+        { status: 400 }
+      )
+    }
+
+    // Map perspectives to prompts
+    const promptMap: Record<string, string> = {
+      investor: INVESTOR_PROMPT,
+      legal: LEGAL_PROMPT,
+      strategy: STRATEGY_PROMPT,
+    }
+
+    // Run all selected perspectives in parallel
+    const analysisPromises = perspectives.map(async (perspective: string) => {
+      const prompt = promptMap[perspective]
+      if (!prompt) {
+        throw new Error(`Unknown perspective: ${perspective}`)
+      }
+
+      const message = await anthropic.messages.create({
+        model: 'claude-sonnet-4-20250514',
+        max_tokens: 4096,
+        messages: [{
+          role: 'user',
+          content: prompt + text
+        }]
+      })
+
+      const result = message.content[0].type === 'text' 
+        ? message.content[0].text 
+        : 'Error processing response'
+
+      return { perspective, result }
     })
 
-    // Extract text response
-    const result = message.content[0].type === 'text' 
-      ? message.content[0].text 
-      : 'Error processing response'
+    // Wait for all analyses to complete
+    const analyses = await Promise.all(analysisPromises)
+
+    // Format results as an object
+    const results = analyses.reduce((acc, { perspective, result }) => {
+      acc[perspective] = result
+      return acc
+    }, {} as Record<string, string>)
 
     // Save to Supabase
     const { data: analysis, error } = await supabase
@@ -57,8 +122,8 @@ export async function POST(request: Request) {
         user_email: email || 'anonymous',
         title: text.substring(0, 50) + '...',
         document_text: text,
-        perspectives: ['investor'],
-        results: { investor: result },
+        perspectives: perspectives,
+        results: results,
         status: 'completed'
       })
       .select()
@@ -69,7 +134,7 @@ export async function POST(request: Request) {
     }
 
     return NextResponse.json({ 
-      result,
+      results,
       analysisId: analysis?.id 
     })
 
