@@ -780,7 +780,7 @@ export default function Home() {
               <div className="text-3xl md:text-4xl font-black opacity-10 mb-4 uppercase tracking-tighter">SHARE</div>
               <h4 className="text-lg md:text-xl font-bold mb-3 uppercase tracking-wide">Export Ready</h4>
               <p className="text-sm opacity-60 leading-relaxed">
-                Professional memo format in PDF or Word. Share with your team or keep for your records.
+                Professional memo format in PDF or Word. Share a link with your team or keep for your records.
               </p>
             </div>
           </div>
