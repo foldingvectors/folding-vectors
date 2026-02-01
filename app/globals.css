@@ -139,6 +139,12 @@ body {
   border-color: var(--border);
 }
 
+/* Word break utilities for long text */
+.overflow-wrap-anywhere {
+  overflow-wrap: anywhere;
+  word-break: break-word;
+}
+
 /* Button styles */
 .btn-primary {
   background-color: var(--text);
@@ -262,4 +268,129 @@ body {
     width: 4px;
     height: 4px;
   }
+}
+
+/* ================================
+   BRUTALIST HOMEPAGE STYLES
+   ================================ */
+
+/* Text stroke effect for hero */
+.text-stroke {
+  -webkit-text-stroke: 2px var(--text);
+  color: transparent;
+}
+
+@media (max-width: 768px) {
+  .text-stroke {
+    -webkit-text-stroke: 1px var(--text);
+  }
+}
+
+/* Hero animations */
+.hero-text-animate {
+  animation: heroReveal 1s cubic-bezier(0.16, 1, 0.3, 1) forwards;
+}
+
+.hero-fade-in {
+  opacity: 0;
+  animation: heroFadeIn 0.8s ease-out 0.5s forwards;
+}
+
+.hero-line-animate {
+  transform: scaleX(0);
+  transform-origin: left;
+  animation: lineExpand 1s cubic-bezier(0.16, 1, 0.3, 1) 0.3s forwards;
+}
+
+@keyframes heroReveal {
+  0% {
+    opacity: 0;
+    transform: translateY(40px);
+  }
+  100% {
+    opacity: 1;
+    transform: translateY(0);
+  }
+}
+
+@keyframes heroFadeIn {
+  0% {
+    opacity: 0;
+  }
+  100% {
+    opacity: 1;
+  }
+}
+
+@keyframes lineExpand {
+  0% {
+    transform: scaleX(0);
+  }
+  100% {
+    transform: scaleX(1);
+  }
+}
+
+/* Infinite scrolling marquee */
+.marquee-container {
+  display: flex;
+  overflow: hidden;
+  white-space: nowrap;
+}
+
+.marquee-content {
+  display: flex;
+  flex-shrink: 0;
+  align-items: center;
+  animation: marquee 25s linear infinite;
+}
+
+@keyframes marquee {
+  0% {
+    transform: translateX(0);
+  }
+  100% {
+    transform: translateX(-100%);
+  }
+}
+
+/* Manifesto line animations */
+.manifesto-line {
+  opacity: 0;
+  transform: translateY(20px);
+  animation: manifestoReveal 0.6s ease-out forwards;
+}
+
+.manifesto-line:nth-child(1) { animation-delay: 0.1s; }
+.manifesto-line:nth-child(2) { animation-delay: 0.2s; }
+.manifesto-line:nth-child(3) { animation-delay: 0.3s; }
+.manifesto-line:nth-child(4) { animation-delay: 0.4s; }
+
+@keyframes manifestoReveal {
+  0% {
+    opacity: 0;
+    transform: translateY(20px);
+  }
+  100% {
+    opacity: 1;
+    transform: translateY(0);
+  }
+}
+
+/* Feature cards hover effect */
+.feature-card {
+  transition: background-color 0.3s ease;
+}
+
+.feature-card:hover {
+  background-color: var(--hover-bg);
+}
+
+/* Bold CTA inverted section */
+[data-theme="dark"] .bg-\[var\(--text\)\] {
+  background-color: var(--text);
+}
+
+[data-theme="dark"] .text-\[var\(--bg\)\] {
+  color: var(--bg);
 }

@@ -10,11 +10,11 @@ export interface Perspective {
 }
 
 export const PERSPECTIVE_CATEGORIES = {
-  business: { name: 'Business', description: 'Financial and market perspectives' },
-  strategic: { name: 'Strategic', description: 'Long-term planning and competition' },
-  compliance: { name: 'Compliance', description: 'Legal, regulatory, and ethical' },
-  technical: { name: 'Technical', description: 'Technology and implementation' },
-  human: { name: 'Human', description: 'People, culture, and communication' },
+  business: { name: 'Business', description: 'Financial and market analysis' },
+  strategic: { name: 'Strategic', description: 'Planning and competition' },
+  compliance: { name: 'Compliance', description: 'Legal and regulatory' },
+  technical: { name: 'Technical', description: 'Technology assessment' },
+  human: { name: 'Human', description: 'People and culture' },
 } as const
 
 export const PERSPECTIVES: Perspective[] = [

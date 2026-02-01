@@ -4,10 +4,11 @@ import { useState, useEffect } from 'react'
 import { supabase } from '@/lib/supabase'
 import { User } from '@supabase/supabase-js'
 import { useRouter } from 'next/navigation'
-import { CheckIcon, CopyIcon, DownloadIcon, ShareIcon } from '@/components/icons'
+import { CheckIcon, CopyIcon, DownloadIcon, ShareIcon, EditIcon } from '@/components/icons'
 import { ThemeToggle } from '@/components/ThemeToggle'
 import { Footer } from '@/components/Footer'
 import { SynthesisView } from '@/components/SynthesisView'
+import { InputModal } from '@/components/Modal'
 import { exportToPDF, exportToWord, exportSynthesisToPDF, exportSynthesisToWord } from '@/lib/export-utils'
 import { PerspectiveSelector } from '@/components/PerspectiveSelector'
 import { PERSPECTIVES, getPerspectiveById, DEFAULT_PERSPECTIVES } from '@/lib/perspectives'
@@ -202,9 +203,12 @@ export default function Home() {
   const [fileName, setFileName] = useState<string | null>(null)
   const [examplesOpen, setExamplesOpen] = useState(false)
   const [analysisId, setAnalysisId] = useState<string | null>(null)
+  const [analysisTitle, setAnalysisTitle] = useState<string | null>(null)
   const [shareUrl, setShareUrl] = useState<string | null>(null)
   const [sharing, setSharing] = useState(false)
   const [shareCopied, setShareCopied] = useState(false)
+  const [renameModalOpen, setRenameModalOpen] = useState(false)
+  const [savingRename, setSavingRename] = useState(false)
   const [customPerspectives, setCustomPerspectives] = useState<Array<{ id: string; name: string; prompt: string; created_at: string }>>([])
 
   const fetchCustomPerspectives = async () => {
@@ -252,6 +256,7 @@ export default function Home() {
     setResults({})
     setLoadingPhase(0)
     setAnalysisId(null)
+    setAnalysisTitle(null)
     setShareUrl(null)
 
     // Loading messages that cycle through
@@ -291,6 +296,7 @@ export default function Home() {
       if (response.ok) {
         setResults(data.results)
         setAnalysisId(data.analysisId)
+        setAnalysisTitle(data.title || 'Untitled Analysis')
         fetchUsageInfo()
       } else {
         if (data.error === 'limit_reached') {
@@ -359,6 +365,28 @@ export default function Home() {
       await navigator.clipboard.writeText(shareUrl)
       setShareCopied(true)
       setTimeout(() => setShareCopied(false), 2000)
+    }
+  }
+
+  const handleRenameAnalysis = async (newTitle: string) => {
+    if (!analysisId) return
+
+    setSavingRename(true)
+    try {
+      const response = await fetch(`/api/analyses/${analysisId}`, {
+        method: 'PATCH',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({ title: newTitle }),
+      })
+
+      if (response.ok) {
+        setAnalysisTitle(newTitle)
+        setRenameModalOpen(false)
+      }
+    } catch (error) {
+      console.error('Error renaming analysis:', error)
+    } finally {
+      setSavingRename(false)
     }
   }
 
@@ -564,102 +592,154 @@ export default function Home() {
   // Landing page for logged-out users
   if (!loadingAuth && !user) {
     return (
-      <div className="min-h-screen bg-[var(--bg)] text-[var(--text)]">
+      <div className="min-h-screen bg-[var(--bg)] text-[var(--text)] overflow-x-hidden">
         {/* Header */}
         <div className="p-4 md:p-8">
           <div className="max-w-7xl mx-auto">
             <div className="flex items-center justify-between mb-6">
               <div>
-                <h1 className="text-2xl md:text-4xl font-light tracking-tight mb-1">
-                  Folding Vectors
+                <h1 className="text-2xl md:text-4xl font-black tracking-tighter mb-1">
+                  FOLDING VECTORS
                 </h1>
               </div>
               <div className="flex items-center gap-2 md:gap-4">
                 <ThemeToggle />
                 <button
                   onClick={() => router.push('/auth/login')}
-                  className="btn-primary px-4 md:px-6 py-2 text-sm font-medium"
+                  className="btn-primary px-4 md:px-6 py-2 text-sm font-bold uppercase tracking-wider"
                 >
                   Sign In
                 </button>
               </div>
             </div>
-            <div className="border-b border-[var(--border)]" />
+            <div className="border-b-2 border-[var(--border)]" />
           </div>
         </div>
 
-        {/* Hero Section */}
-        <div className="px-4 md:px-8 py-12 md:py-16">
-          <div className="max-w-3xl mx-auto text-center fade-in">
-            <h2 className="text-3xl md:text-5xl font-light tracking-tight mb-6">
-              Fold complexity into clarity
-            </h2>
-            <p className="text-lg md:text-xl opacity-60">
-              Multi-perspective analysis for important documents.
-            </p>
-            <p className="text-lg md:text-xl opacity-60">
-              See what you might be missing.
-            </p>
+        {/* Hero Section - Brutalist */}
+        <div className="px-4 md:px-8 py-16 md:py-24 relative">
+          <div className="max-w-5xl mx-auto">
+            {/* Large brutalist headline */}
+            <div className="hero-text-animate">
+              <h2 className="text-5xl md:text-8xl lg:text-9xl font-black tracking-tighter leading-[0.85] mb-8">
+                FOLD<br />
+                <span className="text-stroke">COMPLEXITY</span><br />
+                INTO CLARITY
+              </h2>
+            </div>
+            <div className="max-w-2xl">
+              <p className="text-lg md:text-2xl font-light leading-relaxed hero-fade-in">
+                Multi-perspective analysis for important documents.
+                <br />
+                <span className="font-bold">See what you might be missing.</span>
+              </p>
+            </div>
+          </div>
+          {/* Decorative elements */}
+          <div className="absolute top-1/2 right-0 w-32 md:w-64 h-1 bg-[var(--text)] transform -translate-y-1/2 hero-line-animate" />
+        </div>
+
+        {/* Scrolling marquee */}
+        <div className="border-y-2 border-[var(--border)] py-4 overflow-hidden">
+          <div className="marquee-container">
+            <div className="marquee-content">
+              <span className="text-sm md:text-base font-bold uppercase tracking-widest opacity-60 mx-6">INVESTOR</span>
+              <span className="text-xs opacity-30 mx-4">■</span>
+              <span className="text-sm md:text-base font-bold uppercase tracking-widest opacity-60 mx-6">LEGAL</span>
+              <span className="text-xs opacity-30 mx-4">■</span>
+              <span className="text-sm md:text-base font-bold uppercase tracking-widest opacity-60 mx-6">STRATEGIST</span>
+              <span className="text-xs opacity-30 mx-4">■</span>
+              <span className="text-sm md:text-base font-bold uppercase tracking-widest opacity-60 mx-6">ETHICIST</span>
+              <span className="text-xs opacity-30 mx-4">■</span>
+              <span className="text-sm md:text-base font-bold uppercase tracking-widest opacity-60 mx-6">SKEPTIC</span>
+              <span className="text-xs opacity-30 mx-4">■</span>
+              <span className="text-sm md:text-base font-bold uppercase tracking-widest opacity-60 mx-6">REGULATOR</span>
+              <span className="text-xs opacity-30 mx-4">■</span>
+              <span className="text-sm md:text-base font-bold uppercase tracking-widest opacity-60 mx-6">DEVIL'S ADVOCATE</span>
+              <span className="text-xs opacity-30 mx-4">■</span>
+            </div>
+            <div className="marquee-content" aria-hidden="true">
+              <span className="text-sm md:text-base font-bold uppercase tracking-widest opacity-60 mx-6">INVESTOR</span>
+              <span className="text-xs opacity-30 mx-4">■</span>
+              <span className="text-sm md:text-base font-bold uppercase tracking-widest opacity-60 mx-6">LEGAL</span>
+              <span className="text-xs opacity-30 mx-4">■</span>
+              <span className="text-sm md:text-base font-bold uppercase tracking-widest opacity-60 mx-6">STRATEGIST</span>
+              <span className="text-xs opacity-30 mx-4">■</span>
+              <span className="text-sm md:text-base font-bold uppercase tracking-widest opacity-60 mx-6">ETHICIST</span>
+              <span className="text-xs opacity-30 mx-4">■</span>
+              <span className="text-sm md:text-base font-bold uppercase tracking-widest opacity-60 mx-6">SKEPTIC</span>
+              <span className="text-xs opacity-30 mx-4">■</span>
+              <span className="text-sm md:text-base font-bold uppercase tracking-widest opacity-60 mx-6">REGULATOR</span>
+              <span className="text-xs opacity-30 mx-4">■</span>
+              <span className="text-sm md:text-base font-bold uppercase tracking-widest opacity-60 mx-6">DEVIL'S ADVOCATE</span>
+              <span className="text-xs opacity-30 mx-4">■</span>
+            </div>
           </div>
         </div>
 
         {/* Manifesto Section */}
-        <div className="px-4 md:px-8 py-12 md:py-16 border-t border-[var(--border)]">
-          <div className="max-w-3xl mx-auto slide-up">
-            <h3 className="text-xs uppercase tracking-wider opacity-60 mb-6">Why Folding Vectors</h3>
-            <div className="space-y-4 md:space-y-6 text-base md:text-lg leading-relaxed">
-              <p>
-                We gravitate toward perspectives that confirm what we already believe. It feels good to be right. But when stakes are high, confirmation bias becomes expensive.
+        <div className="px-4 md:px-8 py-16 md:py-24">
+          <div className="max-w-4xl mx-auto">
+            <h3 className="text-xs uppercase tracking-[0.3em] opacity-40 mb-8 font-bold">Why Folding Vectors</h3>
+            <div className="space-y-6 md:space-y-8 text-lg md:text-xl leading-relaxed">
+              <p className="manifesto-line">
+                We gravitate toward perspectives that confirm what we already believe. It feels good to be right. But when stakes are high, <span className="font-bold">confirmation bias becomes expensive.</span>
               </p>
-              <p>
+              <p className="manifesto-line">
                 Every contract has clauses that favor the other party. Every investment has risks the pitch deck glosses over. Every strategy has blind spots the advocates cannot see.
               </p>
-              <p>
-                Folding Vectors forces confrontation with contrarian views. Upload a document, select perspectives that challenge your assumptions, and receive analysis from voices you might otherwise ignore: the skeptic, the ethicist, the adversary, the regulator.
+              <p className="manifesto-line">
+                Folding Vectors forces confrontation with contrarian views. Upload a document, select perspectives that challenge your assumptions, and receive analysis from voices you might otherwise ignore: <span className="font-bold">the skeptic, the ethicist, the adversary, the regulator.</span>
               </p>
-              <p className="font-medium">
-                The goal is not to change your mind. It is to ensure that when you decide, you decide with open eyes.
-              </p>
-            </div>
-          </div>
-        </div>
-
-        {/* Features */}
-        <div className="px-4 md:px-8 py-12 md:py-16 border-t border-[var(--border)]">
-          <div className="max-w-5xl mx-auto">
-            <div className="grid md:grid-cols-3 gap-8 md:gap-12">
-              <div className="fade-in stagger-1">
-                <h4 className="font-medium mb-3">20+ Perspectives</h4>
-                <p className="text-sm opacity-60">
-                  From Investor to Ethicist, Legal Counsel to Devil's Advocate. Choose up to 5 viewpoints for each analysis, or create yours.
+              <div className="border-l-4 border-[var(--text)] pl-6 md:pl-8 py-4">
+                <p className="font-bold text-xl md:text-2xl mb-4">
+                  This will not think for you.
                 </p>
-              </div>
-              <div className="fade-in stagger-2">
-                <h4 className="font-medium mb-3">Synthesis View</h4>
-                <p className="text-sm opacity-60">
-                  See where perspectives agree and where they clash. Identify the tensions that deserve your attention.
-                </p>
-              </div>
-              <div className="fade-in stagger-3">
-                <h4 className="font-medium mb-3">Export Ready</h4>
-                <p className="text-sm opacity-60">
-                  Professional memo format in PDF or Word. Share with your team or keep for your records.
+                <p className="opacity-80 leading-relaxed">
+                  There is no shortcut to expertise and no substitute for judgment. But exposure to perspectives you would not naturally seek sharpens your own thinking. Consider this a sparring partner for your mind. When you make a decision, you will make it with open eyes.
                 </p>
               </div>
             </div>
           </div>
         </div>
 
-        {/* CTA */}
-        <div className="px-4 md:px-8 py-12 md:py-16 border-t border-[var(--border)]">
-          <div className="max-w-3xl mx-auto text-center">
-            <h3 className="text-xl md:text-2xl font-light mb-4">Start analyzing with fresh eyes</h3>
-            <p className="opacity-60 mb-6 md:mb-8">Free to try. No credit card required.</p>
+        {/* Features - Brutalist grid */}
+        <div className="border-t-2 border-[var(--border)]">
+          <div className="grid md:grid-cols-3">
+            <div className="p-8 md:p-12 border-b-2 md:border-b-0 md:border-r-2 border-[var(--border)] feature-card">
+              <div className="text-3xl md:text-4xl font-black opacity-10 mb-4 uppercase tracking-tighter">EXPAND</div>
+              <h4 className="text-lg md:text-xl font-bold mb-3 uppercase tracking-wide">20+ Perspectives</h4>
+              <p className="text-sm opacity-60 leading-relaxed">
+                From Investor to Ethicist, Legal Counsel to Devil's Advocate. Choose up to 5 viewpoints for each analysis, or create yours.
+              </p>
+            </div>
+            <div className="p-8 md:p-12 border-b-2 md:border-b-0 md:border-r-2 border-[var(--border)] feature-card">
+              <div className="text-3xl md:text-4xl font-black opacity-10 mb-4 uppercase tracking-tighter">COMPARE</div>
+              <h4 className="text-lg md:text-xl font-bold mb-3 uppercase tracking-wide">Synthesis View</h4>
+              <p className="text-sm opacity-60 leading-relaxed">
+                See where perspectives agree and where they clash. Identify the tensions that deserve your attention.
+              </p>
+            </div>
+            <div className="p-8 md:p-12 feature-card">
+              <div className="text-3xl md:text-4xl font-black opacity-10 mb-4 uppercase tracking-tighter">SHARE</div>
+              <h4 className="text-lg md:text-xl font-bold mb-3 uppercase tracking-wide">Export Ready</h4>
+              <p className="text-sm opacity-60 leading-relaxed">
+                Professional memo format in PDF or Word. Share with your team or keep for your records.
+              </p>
+            </div>
+          </div>
+        </div>
+
+        {/* CTA - Bold */}
+        <div className="px-4 md:px-8 py-16 md:py-24 border-t-2 border-[var(--border)] bg-[var(--text)] text-[var(--bg)]">
+          <div className="max-w-4xl mx-auto text-center">
+            <h3 className="text-3xl md:text-5xl font-black tracking-tight mb-6">START FOLDING NOW</h3>
+            <p className="opacity-60 mb-8 md:mb-12 text-lg">Free to try. No credit card required.</p>
             <button
               onClick={() => router.push('/auth/login')}
-              className="btn-primary px-6 md:px-8 py-3 md:py-4 text-base md:text-lg font-medium w-full md:w-auto"
+              className="px-8 md:px-12 py-4 md:py-5 bg-[var(--bg)] text-[var(--text)] text-lg md:text-xl font-bold uppercase tracking-wider hover:opacity-80 transition-opacity"
             >
-              Try Now
+              TRY NOW
             </button>
           </div>
         </div>
@@ -726,10 +806,10 @@ export default function Home() {
           <div className="border-b border-[var(--border)]" />
         </div>
 
-        <div className="grid lg:grid-cols-3 gap-6 md:gap-12">
+        <div className="grid lg:grid-cols-3 gap-4 md:gap-8 lg:gap-12">
 
           {/* Left: Input */}
-          <div className="lg:col-span-1 space-y-6">
+          <div className="lg:col-span-1 space-y-4 md:space-y-6">
             {!user && (
               <div>
                 <label className="block text-xs uppercase tracking-wider mb-2 opacity-60">
@@ -910,18 +990,35 @@ export default function Home() {
 
           {/* Right: Results */}
           <div className="lg:col-span-2">
+            {/* Title with rename - show when results are available */}
+            {analysisTitle && Object.keys(results).length > 0 && !loading && (
+              <div className="flex items-start justify-between gap-2 mb-4">
+                <h2 className="text-lg md:text-xl font-light tracking-tight break-words overflow-wrap-anywhere max-w-[calc(100%-60px)]">
+                  {analysisTitle}
+                </h2>
+                <button
+                  onClick={() => setRenameModalOpen(true)}
+                  className="px-2 py-1 border border-[var(--border)] rounded-md text-xs flex items-center gap-1 hover:opacity-60 transition shrink-0"
+                  title="Rename"
+                >
+                  <EditIcon size={12} />
+                  <span className="hidden md:inline">Rename</span>
+                </button>
+              </div>
+            )}
+
             <div className="flex items-center justify-between mb-4">
               <label className="text-xs uppercase tracking-wider opacity-60">
                 Results
               </label>
 
               {Object.keys(results).length > 0 && !loading && (
-                <div className="flex items-center gap-3">
+                <div className="flex flex-wrap items-center gap-2 md:gap-3">
                   {/* View Toggle */}
                   <div className="flex items-center">
                     <button
                       onClick={() => setViewMode('synthesis')}
-                      className={`px-3 py-1.5 border text-xs transition rounded-l-md ${
+                      className={`px-2 md:px-3 py-1.5 border text-xs transition rounded-l-md ${
                         viewMode === 'synthesis'
                           ? 'bg-[var(--text)] text-[var(--bg)] border-[var(--border)]'
                           : 'border-[var(--border)] hover:opacity-60'
@@ -931,7 +1028,7 @@ export default function Home() {
                     </button>
                     <button
                       onClick={() => setViewMode('list')}
-                      className={`px-3 py-1.5 border border-l-0 text-xs transition rounded-r-md ${
+                      className={`px-2 md:px-3 py-1.5 border border-l-0 text-xs transition rounded-r-md ${
                         viewMode === 'list'
                           ? 'bg-[var(--text)] text-[var(--bg)] border-[var(--border)]'
                           : 'border-[var(--border)] hover:opacity-60'
@@ -948,24 +1045,24 @@ export default function Home() {
                       setCopiedId('all')
                       setTimeout(() => setCopiedId(null), 2000)
                     }}
-                    className="px-4 py-2 border border-[var(--border)] rounded-md text-sm flex items-center gap-2 hover:opacity-60 transition"
+                    className="px-2 md:px-4 py-1.5 md:py-2 border border-[var(--border)] rounded-md text-xs md:text-sm flex items-center gap-1 md:gap-2 hover:opacity-60 transition"
                   >
                     {copiedId === 'all' ? (
                       <>
                         <CheckIcon size={14} />
-                        <span>Copied</span>
+                        <span className="hidden md:inline">Copied</span>
                       </>
                     ) : (
                       <>
                         <CopyIcon size={14} />
-                        <span>Copy All</span>
+                        <span className="hidden md:inline">Copy All</span>
                       </>
                     )}
                   </button>
 
                   <button
                     onClick={() => exportToPDF(selectedPerspectives, results, 'Analysis Report', user?.email || email || undefined)}
-                    className="px-4 py-2 border border-[var(--border)] rounded-md text-sm flex items-center gap-2 hover:opacity-60 transition"
+                    className="px-2 md:px-4 py-1.5 md:py-2 border border-[var(--border)] rounded-md text-xs md:text-sm flex items-center gap-1 md:gap-2 hover:opacity-60 transition"
                   >
                     <DownloadIcon size={14} />
                     <span>PDF</span>
@@ -973,7 +1070,7 @@ export default function Home() {
 
                   <button
                     onClick={() => exportToWord(selectedPerspectives, results, 'Analysis Report', user?.email || email || undefined)}
-                    className="px-4 py-2 border border-[var(--border)] rounded-md text-sm flex items-center gap-2 hover:opacity-60 transition"
+                    className="px-2 md:px-4 py-1.5 md:py-2 border border-[var(--border)] rounded-md text-xs md:text-sm flex items-center gap-1 md:gap-2 hover:opacity-60 transition"
                   >
                     <DownloadIcon size={14} />
                     <span>Word</span>
@@ -983,17 +1080,17 @@ export default function Home() {
                     shareUrl ? (
                       <button
                         onClick={handleCopyShareUrl}
-                        className="px-4 py-2 border border-[var(--border)] rounded-md text-sm flex items-center gap-2 hover:opacity-60 transition"
+                        className="px-2 md:px-4 py-1.5 md:py-2 border border-[var(--border)] rounded-md text-xs md:text-sm flex items-center gap-1 md:gap-2 hover:opacity-60 transition"
                       >
                         {shareCopied ? (
                           <>
                             <CheckIcon size={14} />
-                            <span>Copied!</span>
+                            <span className="hidden md:inline">Copied!</span>
                           </>
                         ) : (
                           <>
                             <ShareIcon size={14} />
-                            <span>Copy Link</span>
+                            <span className="hidden md:inline">Copy Link</span>
                           </>
                         )}
                       </button>
@@ -1001,10 +1098,10 @@ export default function Home() {
                       <button
                         onClick={handleShare}
                         disabled={sharing}
-                        className="px-4 py-2 border border-[var(--border)] rounded-md text-sm flex items-center gap-2 hover:opacity-60 transition disabled:opacity-40"
+                        className="px-2 md:px-4 py-1.5 md:py-2 border border-[var(--border)] rounded-md text-xs md:text-sm flex items-center gap-1 md:gap-2 hover:opacity-60 transition disabled:opacity-40"
                       >
                         <ShareIcon size={14} />
-                        <span>{sharing ? 'Creating...' : 'Share'}</span>
+                        <span className="hidden md:inline">{sharing ? 'Creating...' : 'Share'}</span>
                       </button>
                     )
                   )}
@@ -1041,7 +1138,7 @@ export default function Home() {
             )}
 
             {loading && (
-              <div className="space-y-6">
+              <div className="space-y-4 md:space-y-6">
                 {selectedPerspectives.map((perspectiveId, index) => {
                   const perspective = getPerspectiveById(perspectiveId)
                   return (
@@ -1086,7 +1183,7 @@ export default function Home() {
             )}
 
             {Object.keys(results).length > 0 && !loading && viewMode === 'synthesis' && (
-              <div className="border border-[var(--border)] rounded-md p-6">
+              <div className="border border-[var(--border)] rounded-md p-4 md:p-6">
                 <SynthesisView
                   perspectives={selectedPerspectives}
                   results={results}
@@ -1098,7 +1195,7 @@ export default function Home() {
             )}
 
             {Object.keys(results).length > 0 && !loading && viewMode === 'list' && (
-              <div className="space-y-6">
+              <div className="space-y-4 md:space-y-6">
                 {selectedPerspectives.map((perspectiveId) => {
                   // Handle both built-in and custom perspectives
                   const isCustom = perspectiveId.startsWith('custom:')
@@ -1129,13 +1226,13 @@ export default function Home() {
                   return (
                     <div key={perspectiveId} className="border border-[var(--border)] rounded-md">
                       {/* Header */}
-                      <div className="px-6 py-4 border-b border-[var(--border)] flex items-center justify-between">
-                        <div className="flex items-center gap-3">
-                          <div className="w-8 h-8 border border-[var(--border)] rounded-md flex items-center justify-center text-xs font-medium">
+                      <div className="px-4 md:px-6 py-3 md:py-4 border-b border-[var(--border)] flex items-center justify-between">
+                        <div className="flex items-center gap-2 md:gap-3">
+                          <div className="w-7 h-7 md:w-8 md:h-8 border border-[var(--border)] rounded-md flex items-center justify-center text-xs font-medium">
                             {isCustom ? '★' : perspectiveName.charAt(0)}
                           </div>
                           <div>
-                            <div className="font-medium flex items-center gap-2">
+                            <div className="font-medium text-sm md:text-base flex items-center gap-2">
                               {perspectiveName}
                               {isCustom && (
                                 <span className="text-xs px-1.5 py-0.5 border border-[var(--border)] rounded opacity-60">Custom</span>
@@ -1146,24 +1243,24 @@ export default function Home() {
                         </div>
                         <button
                           onClick={() => handleCopy(perspectiveId, resultText)}
-                          className="px-3 py-1.5 border border-[var(--border)] rounded-md text-xs flex items-center gap-2 hover:opacity-60 transition"
+                          className="px-2 md:px-3 py-1 md:py-1.5 border border-[var(--border)] rounded-md text-xs flex items-center gap-1 md:gap-2 hover:opacity-60 transition"
                         >
                           {copiedId === perspectiveId ? (
                             <>
                               <CheckIcon size={12} />
-                              <span>Copied</span>
+                              <span className="hidden md:inline">Copied</span>
                             </>
                           ) : (
                             <>
                               <CopyIcon size={12} />
-                              <span>Copy</span>
+                              <span className="hidden md:inline">Copy</span>
                             </>
                           )}
                         </button>
                       </div>
 
                       {/* Content */}
-                      <div className="p-6">
+                      <div className="p-4 md:p-6">
                         {parsedResult ? (
                           renderParsedResult(parsedResult)
                         ) : (
@@ -1179,9 +1276,9 @@ export default function Home() {
             )}
 
             {Object.keys(results).length === 0 && !loading && (
-              <div className="border border-[var(--border)] rounded-md p-12 text-center">
+              <div className="border border-[var(--border)] rounded-md p-6 md:p-12 text-center">
                 <h3 className="text-lg font-medium mb-2">
-                  Ready to Analyze
+                  Ready to Fold
                 </h3>
                 <p className="text-sm opacity-60 max-w-md mx-auto mb-6">
                   Select perspectives, paste a document, and click Analyze to see insights from multiple professional viewpoints.
@@ -1204,7 +1301,20 @@ export default function Home() {
       </div>
 
       {/* Footer */}
-      <Footer className="mt-16" />
+      <Footer className="mt-8 md:mt-16" />
+
+      {/* Rename Modal */}
+      <InputModal
+        isOpen={renameModalOpen}
+        onClose={() => setRenameModalOpen(false)}
+        onConfirm={handleRenameAnalysis}
+        title="Rename Analysis"
+        label="Title"
+        placeholder="Enter a new title"
+        initialValue={analysisTitle || ''}
+        confirmLabel="Save"
+        loading={savingRename}
+      />
     </div>
   )
 }

@@ -3,6 +3,7 @@
 import { useState, useEffect } from 'react'
 import { PERSPECTIVES, PERSPECTIVE_CATEGORIES, type Perspective } from '@/lib/perspectives'
 import { CheckIcon } from '@/components/icons'
+import { ConfirmModal } from '@/components/Modal'
 
 interface CustomPerspective {
   id: string
@@ -49,6 +50,8 @@ export function PerspectiveSelector({
   const [savingCustom, setSavingCustom] = useState(false)
   const [editingCustomId, setEditingCustomId] = useState<string | null>(null)
   const [deletingCustomId, setDeletingCustomId] = useState<string | null>(null)
+  const [deleteModalOpen, setDeleteModalOpen] = useState(false)
+  const [deleteTargetId, setDeleteTargetId] = useState<string | null>(null)
 
   const togglePerspective = (id: string) => {
     if (selected.includes(id)) {
@@ -166,19 +169,26 @@ export function PerspectiveSelector({
     setShowCustomForm(true)
   }
 
-  const handleDeleteCustomPerspective = async (id: string) => {
-    if (!confirm('Are you sure you want to delete this custom perspective?')) return
+  const openDeleteModal = (id: string) => {
+    setDeleteTargetId(id)
+    setDeleteModalOpen(true)
+  }
 
-    setDeletingCustomId(id)
+  const handleDeleteCustomPerspective = async () => {
+    if (!deleteTargetId) return
+
+    setDeletingCustomId(deleteTargetId)
     try {
-      const response = await fetch(`/api/custom-perspectives/${id}`, {
+      const response = await fetch(`/api/custom-perspectives/${deleteTargetId}`, {
         method: 'DELETE',
       })
 
       if (response.ok) {
         // Remove from selected if it was selected
-        onChange(selected.filter(s => s !== `custom:${id}`))
+        onChange(selected.filter(s => s !== `custom:${deleteTargetId}`))
         onCustomPerspectivesChange?.()
+        setDeleteModalOpen(false)
+        setDeleteTargetId(null)
       }
     } catch (error) {
       console.error('Error deleting custom perspective:', error)
@@ -197,7 +207,7 @@ export function PerspectiveSelector({
   // Extended categories to include custom
   const allCategories = {
     ...PERSPECTIVE_CATEGORIES,
-    custom: { name: 'Custom', description: 'Your custom perspectives' },
+    custom: { name: 'Custom', description: 'Your perspectives' },
   }
 
   // Handle clicking on a perspective chip to open dropdown and focus on its category
@@ -275,7 +285,7 @@ export function PerspectiveSelector({
                   <button
                     key={key}
                     onClick={() => setActiveCategory(key)}
-                    className={`flex-shrink-0 px-4 py-2 text-sm transition flex items-center gap-2 ${
+                    className={`flex-shrink-0 px-4 py-3 text-sm transition flex items-center gap-2 ${
                       activeCategory === key
                         ? 'border-b-2 border-[var(--text)] font-medium'
                         : 'opacity-60 hover:opacity-100'
@@ -296,29 +306,29 @@ export function PerspectiveSelector({
 
           {/* Category actions - only show when not searching */}
           {!searchQuery && (
-            <div className="flex items-center justify-between px-3 py-2 border-b border-[var(--border)] bg-[var(--bg)]">
+            <div className="flex items-center justify-between px-4 py-3 border-b border-[var(--border)] bg-[var(--bg)]">
               <span className="text-xs opacity-60">
                 {allCategories[activeCategory as keyof typeof allCategories]?.description}
               </span>
-              <div className="flex gap-2">
+              <div className="flex gap-2 ml-4">
                 {activeCategory === 'custom' && isLoggedIn ? (
                   <button
                     onClick={() => setShowCustomForm(true)}
-                    className="text-xs px-2 py-1 bg-[var(--text)] text-[var(--bg)] rounded hover:opacity-80 transition"
+                    className="text-xs px-3 py-1.5 bg-[var(--text)] text-[var(--bg)] rounded hover:opacity-80 transition whitespace-nowrap"
                   >
-                    + New Perspective
+                    + New
                   </button>
                 ) : (
                   <>
                     <button
                       onClick={() => selectAll(activeCategory)}
-                      className="text-xs px-2 py-1 border border-[var(--border)] rounded hover:opacity-60 transition"
+                      className="text-xs px-3 py-1.5 border border-[var(--border)] rounded hover:opacity-60 transition whitespace-nowrap"
                     >
                       Select All
                     </button>
                     <button
                       onClick={() => clearCategory(activeCategory)}
-                      className="text-xs px-2 py-1 border border-[var(--border)] rounded hover:opacity-60 transition"
+                      className="text-xs px-3 py-1.5 border border-[var(--border)] rounded hover:opacity-60 transition whitespace-nowrap"
                     >
                       Clear
                     </button>
@@ -380,7 +390,7 @@ export function PerspectiveSelector({
           )}
 
           {/* Perspectives list */}
-          <div className="overflow-y-auto flex-1 p-2">
+          <div className="overflow-y-auto flex-1 px-2 py-2 min-h-[220px]">
             {searchQuery && (
               <div className="px-2 py-1 text-xs opacity-60 mb-2">
                 {filteredPerspectives.length + filteredCustomPerspectives.length} result{(filteredPerspectives.length + filteredCustomPerspectives.length) !== 1 ? 's' : ''}
@@ -389,7 +399,7 @@ export function PerspectiveSelector({
 
             {/* Custom perspectives (when in custom tab or searching) */}
             {(activeCategory === 'custom' || searchQuery) && (
-              <div className="space-y-1">
+              <div className="space-y-0">
                 {(searchQuery ? filteredCustomPerspectives : customPerspectives).map(perspective => {
                   const perspectiveId = `custom:${perspective.id}`
                   const isSelected = selected.includes(perspectiveId)
@@ -399,7 +409,7 @@ export function PerspectiveSelector({
                   return (
                     <div
                       key={perspective.id}
-                      className={`w-full text-left px-3 py-3 rounded-md transition flex items-start gap-3 ${
+                      className={`w-full text-left px-4 py-4 rounded-md transition flex items-start gap-3 ${
                         isSelected
                           ? 'bg-[var(--text)] text-[var(--bg)]'
                           : isDisabled
@@ -410,7 +420,7 @@ export function PerspectiveSelector({
                       <button
                         onClick={() => !isDisabled && togglePerspective(perspectiveId)}
                         disabled={isDisabled}
-                        className={`mt-0.5 w-4 h-4 border rounded flex items-center justify-center flex-shrink-0 ${
+                        className={`mt-1 w-4 h-4 border rounded flex items-center justify-center flex-shrink-0 ${
                           isSelected ? 'border-[var(--bg)]' : 'border-[var(--border)]'
                         } ${isDisabled ? 'cursor-not-allowed' : 'cursor-pointer'}`}
                       >
@@ -420,8 +430,8 @@ export function PerspectiveSelector({
                         className="flex-1 min-w-0 cursor-pointer"
                         onClick={() => !isDisabled && togglePerspective(perspectiveId)}
                       >
-                        <div className="flex items-center gap-2">
-                          <span className="font-medium">{perspective.name}</span>
+                        <div className="flex items-center gap-2 mb-1">
+                          <span className="font-medium text-sm">{perspective.name}</span>
                           <span className={`text-xs px-1.5 py-0.5 rounded border ${
                             isSelected
                               ? 'border-[var(--bg)] border-opacity-40 text-[var(--bg)]'
@@ -430,8 +440,8 @@ export function PerspectiveSelector({
                             Custom
                           </span>
                         </div>
-                        <div className={`text-xs mt-1 ${isSelected ? 'opacity-60' : 'opacity-40'}`}>
-                          {perspective.prompt.substring(0, 100)}{perspective.prompt.length > 100 ? '...' : ''}
+                        <div className={`text-xs leading-relaxed ${isSelected ? 'opacity-70' : 'opacity-50'}`}>
+                          {perspective.prompt.substring(0, 120)}{perspective.prompt.length > 120 ? '...' : ''}
                         </div>
                       </div>
                       {/* Edit/Delete buttons */}
@@ -450,7 +460,7 @@ export function PerspectiveSelector({
                         <button
                           onClick={(e) => {
                             e.stopPropagation()
-                            handleDeleteCustomPerspective(perspective.id)
+                            openDeleteModal(perspective.id)
                           }}
                           disabled={isDeleting}
                           className={`px-2 py-1 text-xs border rounded hover:opacity-60 transition ${
@@ -480,7 +490,7 @@ export function PerspectiveSelector({
 
             {/* Built-in perspectives */}
             {activeCategory !== 'custom' && (
-              <div className="space-y-1">
+              <div className="space-y-0">
                 {filteredPerspectives.map(perspective => {
                   const isSelected = selected.includes(perspective.id)
                   const isDisabled = !isSelected && selected.length >= maxSelections
@@ -489,7 +499,7 @@ export function PerspectiveSelector({
                       key={perspective.id}
                       onClick={() => !isDisabled && togglePerspective(perspective.id)}
                       disabled={isDisabled}
-                      className={`w-full text-left px-3 py-3 rounded-md transition flex items-start gap-3 ${
+                      className={`w-full text-left px-4 py-4 rounded-md transition flex items-start gap-3 ${
                         isSelected
                           ? 'bg-[var(--text)] text-[var(--bg)]'
                           : isDisabled
@@ -497,14 +507,14 @@ export function PerspectiveSelector({
                           : 'hover:bg-[var(--hover-bg)]'
                       }`}
                     >
-                      <div className={`mt-0.5 w-4 h-4 border rounded flex items-center justify-center flex-shrink-0 ${
+                      <div className={`mt-1 w-4 h-4 border rounded flex items-center justify-center flex-shrink-0 ${
                         isSelected ? 'border-[var(--bg)]' : 'border-[var(--border)]'
                       }`}>
                         {isSelected && <CheckIcon size={12} />}
                       </div>
                       <div className="flex-1 min-w-0">
-                        <div className="flex items-center gap-2">
-                          <span className="font-medium">{perspective.name}</span>
+                        <div className="flex items-center gap-2 mb-1">
+                          <span className="font-medium text-sm">{perspective.name}</span>
                           {searchQuery && (
                             <span className={`text-xs px-1.5 py-0.5 rounded border ${
                               isSelected
@@ -515,11 +525,10 @@ export function PerspectiveSelector({
                             </span>
                           )}
                         </div>
-                        <div className={`text-xs mt-0.5 ${isSelected ? 'opacity-80' : 'opacity-60'}`}>
-                          {perspective.coreFocus}
-                        </div>
-                        <div className={`text-xs mt-1 ${isSelected ? 'opacity-60' : 'opacity-40'}`}>
-                          {perspective.description}
+                        <div className={`text-xs leading-relaxed ${isSelected ? 'opacity-70' : 'opacity-50'}`}>
+                          <span className="font-medium">{perspective.coreFocus}</span>
+                          <span className="mx-1">—</span>
+                          <span>{perspective.description}</span>
                         </div>
                       </div>
                     </button>
@@ -543,6 +552,20 @@ export function PerspectiveSelector({
           </div>
         </div>
       )}
+
+      {/* Delete Custom Perspective Confirmation Modal */}
+      <ConfirmModal
+        isOpen={deleteModalOpen}
+        onClose={() => {
+          setDeleteModalOpen(false)
+          setDeleteTargetId(null)
+        }}
+        onConfirm={handleDeleteCustomPerspective}
+        title="Delete Custom Perspective"
+        message="Are you sure you want to delete this custom perspective? This action cannot be undone."
+        confirmLabel="Delete"
+        loading={deletingCustomId !== null}
+      />
     </div>
   )
 }

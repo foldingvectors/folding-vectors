@@ -7,6 +7,7 @@ import { useRouter } from 'next/navigation'
 import { ThemeToggle } from '@/components/ThemeToggle'
 import { ChartIcon, ScalesIcon, ArrowIcon } from '@/components/icons'
 import { Footer } from '@/components/Footer'
+import { ConfirmModal, InputModal } from '@/components/Modal'
 
 interface Analysis {
   id: string
@@ -38,9 +39,13 @@ export default function DashboardPage() {
   const [totalCount, setTotalCount] = useState(0)
   const [page, setPage] = useState(1)
   const [deleting, setDeleting] = useState<string | null>(null)
+  const [deleteModalOpen, setDeleteModalOpen] = useState(false)
+  const [deleteTargetId, setDeleteTargetId] = useState<string | null>(null)
   const [editingId, setEditingId] = useState<string | null>(null)
   const [editingTitle, setEditingTitle] = useState('')
   const [saving, setSaving] = useState(false)
+  const [renameModalOpen, setRenameModalOpen] = useState(false)
+  const [renameTarget, setRenameTarget] = useState<Analysis | null>(null)
   const router = useRouter()
 
   const limit = 10
@@ -84,25 +89,60 @@ export default function DashboardPage() {
     }
   }
 
-  const handleDelete = async (id: string) => {
-    if (!confirm('Are you sure you want to delete this analysis?')) {
-      return
-    }
+  const openDeleteModal = (id: string) => {
+    setDeleteTargetId(id)
+    setDeleteModalOpen(true)
+  }
 
-    setDeleting(id)
+  const handleDelete = async () => {
+    if (!deleteTargetId) return
+
+    setDeleting(deleteTargetId)
     try {
-      const response = await fetch(`/api/analyses/${id}`, {
+      const response = await fetch(`/api/analyses/${deleteTargetId}`, {
         method: 'DELETE',
       })
 
       if (response.ok) {
-        setAnalyses(analyses.filter(a => a.id !== id))
+        setAnalyses(analyses.filter(a => a.id !== deleteTargetId))
         setTotalCount(totalCount - 1)
+        setDeleteModalOpen(false)
+        setDeleteTargetId(null)
       }
     } catch (error) {
       console.error('Error deleting analysis:', error)
     } finally {
       setDeleting(null)
+    }
+  }
+
+  const openRenameModal = (analysis: Analysis) => {
+    setRenameTarget(analysis)
+    setRenameModalOpen(true)
+  }
+
+  const handleRenameFromModal = async (newTitle: string) => {
+    if (!renameTarget) return
+
+    setSaving(true)
+    try {
+      const response = await fetch(`/api/analyses/${renameTarget.id}`, {
+        method: 'PATCH',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({ title: newTitle }),
+      })
+
+      if (response.ok) {
+        setAnalyses(analyses.map(a =>
+          a.id === renameTarget.id ? { ...a, title: newTitle } : a
+        ))
+        setRenameModalOpen(false)
+        setRenameTarget(null)
+      }
+    } catch (error) {
+      console.error('Error renaming analysis:', error)
+    } finally {
+      setSaving(false)
     }
   }
 
@@ -188,7 +228,7 @@ export default function DashboardPage() {
                 onClick={() => router.push('/')}
                 className="px-4 py-2 border border-[var(--border)] rounded-md text-sm hover:opacity-60 transition"
               >
-                New Analysis
+                Home
               </button>
             </div>
           </div>
@@ -304,10 +344,10 @@ export default function DashboardPage() {
                   ) : (
                     <>
                       <div
-                        className="flex-1 cursor-pointer"
+                        className="flex-1 cursor-pointer min-w-0"
                         onClick={() => router.push(`/dashboard/analysis/${analysis.id}`)}
                       >
-                        <div className="font-medium mb-1">{analysis.title}</div>
+                        <div className="font-medium mb-1 break-words overflow-wrap-anywhere">{analysis.title}</div>
                         <div className="flex items-center gap-4 text-xs opacity-60">
                           <span>{formatDate(analysis.created_at)}</span>
                           <div className="flex items-center gap-2">
@@ -320,13 +360,13 @@ export default function DashboardPage() {
                       </div>
                       <div className="flex items-center gap-2">
                         <button
-                          onClick={() => handleRename(analysis)}
+                          onClick={() => openRenameModal(analysis)}
                           className="px-3 py-1 border border-[var(--border)] rounded-md text-xs hover:opacity-60 transition"
                         >
                           Rename
                         </button>
                         <button
-                          onClick={() => handleDelete(analysis.id)}
+                          onClick={() => openDeleteModal(analysis.id)}
                           disabled={deleting === analysis.id}
                           className="px-3 py-1 border border-[var(--border)] rounded-md text-xs hover:opacity-60 transition disabled:opacity-40"
                         >
@@ -368,6 +408,36 @@ export default function DashboardPage() {
 
       {/* Footer */}
       <Footer className="mt-16" />
+
+      {/* Delete Confirmation Modal */}
+      <ConfirmModal
+        isOpen={deleteModalOpen}
+        onClose={() => {
+          setDeleteModalOpen(false)
+          setDeleteTargetId(null)
+        }}
+        onConfirm={handleDelete}
+        title="Delete Analysis"
+        message="Are you sure you want to delete this analysis? This action cannot be undone."
+        confirmLabel="Delete"
+        loading={deleting !== null}
+      />
+
+      {/* Rename Modal */}
+      <InputModal
+        isOpen={renameModalOpen}
+        onClose={() => {
+          setRenameModalOpen(false)
+          setRenameTarget(null)
+        }}
+        onConfirm={handleRenameFromModal}
+        title="Rename Analysis"
+        label="Title"
+        placeholder="Enter a new title"
+        initialValue={renameTarget?.title || ''}
+        confirmLabel="Save"
+        loading={saving}
+      />
     </div>
   )
 }

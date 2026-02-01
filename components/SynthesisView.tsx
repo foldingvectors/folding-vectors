@@ -334,7 +334,7 @@ export function SynthesisView({ perspectives, results, customPerspectives = [], 
   }
 
   return (
-    <div className="space-y-6">
+    <div className="space-y-4 md:space-y-6">
       {/* Header */}
       <div className="flex items-center justify-between pb-4 border-b border-[var(--border)]">
         <div>
@@ -366,7 +366,7 @@ export function SynthesisView({ perspectives, results, customPerspectives = [], 
       </div>
 
       {/* Overall Score */}
-      <div className="border border-[var(--border)] rounded-md p-4">
+      <div className="border border-[var(--border)] rounded-md p-3 md:p-4">
         <h3 className="text-xs uppercase tracking-wider opacity-60 mb-4">Composite Score</h3>
         <div className="flex items-center gap-4">
           <div className={`text-4xl font-bold px-4 py-2 rounded-md ${
@@ -419,10 +419,10 @@ export function SynthesisView({ perspectives, results, customPerspectives = [], 
       </div>
 
       {/* Agreement & Tension Grid */}
-      <div className="grid grid-cols-2 gap-4">
+      <div className="grid grid-cols-1 md:grid-cols-2 gap-3 md:gap-4">
         {/* Agreements */}
-        <div className="border border-[var(--border)] rounded-md p-4">
-          <h3 className="text-xs uppercase tracking-wider opacity-60 mb-3 flex items-center gap-2">
+        <div className="border border-[var(--border)] rounded-md p-3 md:p-4">
+          <h3 className="text-xs uppercase tracking-wider opacity-60 mb-2 md:mb-3 flex items-center gap-2">
             <span className="w-3 h-3 bg-[var(--text)] rounded-full" />
             Points of Agreement ({agreements.length})
           </h3>
@@ -438,8 +438,8 @@ export function SynthesisView({ perspectives, results, customPerspectives = [], 
         </div>
 
         {/* Tensions */}
-        <div className="border border-[var(--border)] rounded-md p-4">
-          <h3 className="text-xs uppercase tracking-wider opacity-60 mb-3 flex items-center gap-2">
+        <div className="border border-[var(--border)] rounded-md p-3 md:p-4">
+          <h3 className="text-xs uppercase tracking-wider opacity-60 mb-2 md:mb-3 flex items-center gap-2">
             <span className="w-3 h-3 border border-[var(--border)] rounded-full" />
             Points of Tension ({tensions.length})
           </h3>

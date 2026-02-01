@@ -144,7 +144,7 @@ export default function PrivacyPolicyPage() {
             </ul>
 
             <p className="opacity-80 mt-4">
-              To exercise any of these rights, please contact us at privacy@foldingvectors.com.
+              To exercise any of these rights, please contact us at hello@foldingvectors.com.
             </p>
           </section>
 

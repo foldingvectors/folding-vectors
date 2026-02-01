@@ -336,6 +336,7 @@ ${text}`
     return NextResponse.json({
       results,
       analysisId: analysis?.id,
+      title: analysis?.title,
       analyses_remaining: isUnlimited ? 999999 : DAILY_LIMIT - (currentProfile.analyses_count + 1),
     })
 

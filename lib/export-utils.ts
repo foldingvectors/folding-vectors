@@ -588,12 +588,26 @@ export async function exportSynthesisToPDF(
     yPos += 8
 
     doc.setFontSize(9)
-    doc.setFont('helvetica', 'normal')
     agreements.forEach(a => {
-      if (yPos > 265) { doc.addPage(); yPos = margin }
-      const lines = doc.splitTextToSize(`+ ${a.text}`, contentWidth)
-      doc.text(lines, margin, yPos)
-      yPos += lines.length * 4 + 4
+      if (yPos > 250) { doc.addPage(); yPos = margin }
+      doc.setFont('helvetica', 'bold')
+      const titleLines = doc.splitTextToSize(`+ ${a.text}`, contentWidth)
+      doc.text(titleLines, margin, yPos)
+      yPos += titleLines.length * 4 + 2
+
+      // Include the detailed quotes
+      if (a.details) {
+        doc.setFont('helvetica', 'normal')
+        doc.setFontSize(8)
+        const detailLines = doc.splitTextToSize(a.details, contentWidth - 10)
+        detailLines.forEach((line: string) => {
+          if (yPos > 270) { doc.addPage(); yPos = margin }
+          doc.text(line, margin + 5, yPos)
+          yPos += 3.5
+        })
+        doc.setFontSize(9)
+      }
+      yPos += 6
     })
     yPos += 5
   }
@@ -607,12 +621,26 @@ export async function exportSynthesisToPDF(
     yPos += 8
 
     doc.setFontSize(9)
-    doc.setFont('helvetica', 'normal')
     tensions.forEach(t => {
-      if (yPos > 265) { doc.addPage(); yPos = margin }
-      const lines = doc.splitTextToSize(`~ ${t.text}`, contentWidth)
-      doc.text(lines, margin, yPos)
-      yPos += lines.length * 4 + 4
+      if (yPos > 250) { doc.addPage(); yPos = margin }
+      doc.setFont('helvetica', 'bold')
+      const titleLines = doc.splitTextToSize(`~ ${t.text}`, contentWidth)
+      doc.text(titleLines, margin, yPos)
+      yPos += titleLines.length * 4 + 2
+
+      // Include the detailed quotes
+      if (t.details) {
+        doc.setFont('helvetica', 'normal')
+        doc.setFontSize(8)
+        const detailLines = doc.splitTextToSize(t.details, contentWidth - 10)
+        detailLines.forEach((line: string) => {
+          if (yPos > 270) { doc.addPage(); yPos = margin }
+          doc.text(line, margin + 5, yPos)
+          yPos += 3.5
+        })
+        doc.setFontSize(9)
+      }
+      yPos += 6
     })
   }
 
@@ -745,10 +773,19 @@ export async function exportSynthesisToWord(
     agreements.forEach(a => {
       children.push(
         new Paragraph({
-          children: [new TextRun({ text: `+ ${a.text}`, size: 20 })],
-          spacing: { after: 100 },
+          children: [new TextRun({ text: `+ ${a.text}`, bold: true, size: 20 })],
+          spacing: { after: 50 },
         })
       )
+      // Include the detailed quotes
+      if (a.details) {
+        children.push(
+          new Paragraph({
+            children: [new TextRun({ text: a.details, size: 18, italics: true, color: '444444' })],
+            spacing: { after: 150 },
+          })
+        )
+      }
     })
   }
 
@@ -764,10 +801,19 @@ export async function exportSynthesisToWord(
     tensions.forEach(t => {
       children.push(
         new Paragraph({
-          children: [new TextRun({ text: `~ ${t.text}`, size: 20 })],
-          spacing: { after: 100 },
+          children: [new TextRun({ text: `~ ${t.text}`, bold: true, size: 20 })],
+          spacing: { after: 50 },
         })
       )
+      // Include the detailed quotes
+      if (t.details) {
+        children.push(
+          new Paragraph({
+            children: [new TextRun({ text: t.details, size: 18, italics: true, color: '444444' })],
+            spacing: { after: 150 },
+          })
+        )
+      }
     })
   }
 

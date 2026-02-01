@@ -5,11 +5,12 @@ import { supabase } from '@/lib/supabase'
 import { User } from '@supabase/supabase-js'
 import { useRouter } from 'next/navigation'
 import { ThemeToggle } from '@/components/ThemeToggle'
-import { CheckIcon, CopyIcon, DownloadIcon, ShareIcon } from '@/components/icons'
+import { CheckIcon, CopyIcon, DownloadIcon, ShareIcon, EditIcon } from '@/components/icons'
 import { SynthesisView } from '@/components/SynthesisView'
 import { getPerspectiveById, PERSPECTIVE_CATEGORIES } from '@/lib/perspectives'
 import { exportToPDF, exportToWord, exportSynthesisToPDF, exportSynthesisToWord } from '@/lib/export-utils'
 import { Footer } from '@/components/Footer'
+import { InputModal } from '@/components/Modal'
 
 interface Analysis {
   id: string
@@ -156,6 +157,8 @@ export default function AnalysisPage({ params }: { params: Promise<{ id: string 
   const [shareUrl, setShareUrl] = useState<string | null>(null)
   const [sharing, setSharing] = useState(false)
   const [shareCopied, setShareCopied] = useState(false)
+  const [renameModalOpen, setRenameModalOpen] = useState(false)
+  const [saving, setSaving] = useState(false)
   const router = useRouter()
 
   useEffect(() => {
@@ -272,6 +275,28 @@ export default function AnalysisPage({ params }: { params: Promise<{ id: string 
     })
   }
 
+  const handleRename = async (newTitle: string) => {
+    if (!analysis) return
+
+    setSaving(true)
+    try {
+      const response = await fetch(`/api/analyses/${id}`, {
+        method: 'PATCH',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({ title: newTitle }),
+      })
+
+      if (response.ok) {
+        setAnalysis({ ...analysis, title: newTitle })
+        setRenameModalOpen(false)
+      }
+    } catch (error) {
+      console.error('Error renaming analysis:', error)
+    } finally {
+      setSaving(false)
+    }
+  }
+
   if (!user || loading) {
     return (
       <div className="min-h-screen bg-[var(--bg)] text-[var(--text)] p-8">
@@ -349,11 +374,11 @@ export default function AnalysisPage({ params }: { params: Promise<{ id: string 
   }
 
   return (
-    <div className="min-h-screen bg-[var(--bg)] text-[var(--text)] p-8">
+    <div className="min-h-screen bg-[var(--bg)] text-[var(--text)] p-4 md:p-8">
       <div className="max-w-4xl mx-auto">
 
         {/* Header */}
-        <div className="mb-8">
+        <div className="mb-6 md:mb-8">
           <div className="flex items-center justify-between mb-4">
             <button
               onClick={() => router.push('/dashboard')}
@@ -364,20 +389,30 @@ export default function AnalysisPage({ params }: { params: Promise<{ id: string 
             <ThemeToggle />
           </div>
 
-          <h1 className="text-2xl font-light tracking-tight mb-2">
-            {analysis.title}
-          </h1>
+          <div className="flex items-start justify-between gap-2">
+            <h1 className="text-xl md:text-2xl font-light tracking-tight mb-2 break-words overflow-wrap-anywhere min-w-0 flex-1">
+              {analysis.title}
+            </h1>
+            <button
+              onClick={() => setRenameModalOpen(true)}
+              className="px-2 py-1 border border-[var(--border)] rounded-md text-xs flex items-center gap-1 hover:opacity-60 transition shrink-0"
+              title="Rename"
+            >
+              <EditIcon size={12} />
+              <span className="hidden md:inline">Rename</span>
+            </button>
+          </div>
           <p className="text-sm opacity-60">
             {formatDate(analysis.created_at)}
           </p>
         </div>
 
         {/* View Toggle and Export */}
-        <div className="flex items-center justify-between mb-6">
-          <div className="flex items-center gap-2">
+        <div className="flex flex-wrap items-center justify-between gap-3 mb-6">
+          <div className="flex items-center">
             <button
               onClick={() => setViewMode('synthesis')}
-              className={`px-4 py-2 border text-sm transition rounded-l-md ${
+              className={`px-3 md:px-4 py-1.5 md:py-2 border text-xs md:text-sm transition rounded-l-md ${
                 viewMode === 'synthesis'
                   ? 'bg-[var(--text)] text-[var(--bg)] border-[var(--border)]'
                   : 'border-[var(--border)] hover:opacity-60'
@@ -387,7 +422,7 @@ export default function AnalysisPage({ params }: { params: Promise<{ id: string 
             </button>
             <button
               onClick={() => setViewMode('list')}
-              className={`px-4 py-2 border text-sm transition rounded-r-md ${
+              className={`px-3 md:px-4 py-1.5 md:py-2 border text-xs md:text-sm transition rounded-r-md ${
                 viewMode === 'list'
                   ? 'bg-[var(--text)] text-[var(--bg)] border-[var(--border)]'
                   : 'border-[var(--border)] hover:opacity-60'
@@ -397,21 +432,21 @@ export default function AnalysisPage({ params }: { params: Promise<{ id: string 
             </button>
           </div>
 
-          <div className="flex items-center gap-2">
+          <div className="flex flex-wrap items-center gap-2">
             {shareUrl ? (
               <button
                 onClick={handleCopyShareUrl}
-                className="px-3 py-2 border border-[var(--border)] rounded-md text-sm flex items-center gap-2 hover:opacity-60 transition"
+                className="px-2 md:px-3 py-1.5 md:py-2 border border-[var(--border)] rounded-md text-xs md:text-sm flex items-center gap-1 md:gap-2 hover:opacity-60 transition"
               >
                 {shareCopied ? (
                   <>
                     <CheckIcon size={14} />
-                    <span>Copied!</span>
+                    <span className="hidden md:inline">Copied!</span>
                   </>
                 ) : (
                   <>
                     <ShareIcon size={14} />
-                    <span>Copy Link</span>
+                    <span className="hidden md:inline">Copy Link</span>
                   </>
                 )}
               </button>
@@ -419,22 +454,22 @@ export default function AnalysisPage({ params }: { params: Promise<{ id: string 
               <button
                 onClick={handleShare}
                 disabled={sharing}
-                className="px-3 py-2 border border-[var(--border)] rounded-md text-sm flex items-center gap-2 hover:opacity-60 transition disabled:opacity-40"
+                className="px-2 md:px-3 py-1.5 md:py-2 border border-[var(--border)] rounded-md text-xs md:text-sm flex items-center gap-1 md:gap-2 hover:opacity-60 transition disabled:opacity-40"
               >
                 <ShareIcon size={14} />
-                <span>{sharing ? 'Creating...' : 'Share'}</span>
+                <span className="hidden md:inline">{sharing ? 'Creating...' : 'Share'}</span>
               </button>
             )}
             <button
               onClick={() => exportToPDF(analysis.perspectives, analysis.results, analysis.title, user?.email || undefined)}
-              className="px-3 py-2 border border-[var(--border)] rounded-md text-sm flex items-center gap-2 hover:opacity-60 transition"
+              className="px-2 md:px-3 py-1.5 md:py-2 border border-[var(--border)] rounded-md text-xs md:text-sm flex items-center gap-1 md:gap-2 hover:opacity-60 transition"
             >
               <DownloadIcon size={14} />
               <span>PDF</span>
             </button>
             <button
               onClick={() => exportToWord(analysis.perspectives, analysis.results, analysis.title, user?.email || undefined)}
-              className="px-3 py-2 border border-[var(--border)] rounded-md text-sm flex items-center gap-2 hover:opacity-60 transition"
+              className="px-2 md:px-3 py-1.5 md:py-2 border border-[var(--border)] rounded-md text-xs md:text-sm flex items-center gap-1 md:gap-2 hover:opacity-60 transition"
             >
               <DownloadIcon size={14} />
               <span>Word</span>
@@ -505,11 +540,11 @@ export default function AnalysisPage({ params }: { params: Promise<{ id: string 
               return (
                 <div key={perspectiveId} className="border border-[var(--border)] rounded-md">
                   {/* Header */}
-                  <div className="px-6 py-4 border-b border-[var(--border)] flex items-center justify-between">
-                    <div className="flex items-center gap-3">
+                  <div className="px-4 md:px-6 py-3 md:py-4 border-b border-[var(--border)] flex items-center justify-between">
+                    <div className="flex items-center gap-2 md:gap-3">
                       <span className="text-lg">{categoryIcon}</span>
                       <div>
-                        <div className="font-medium flex items-center gap-2">
+                        <div className="font-medium text-sm md:text-base flex items-center gap-2">
                           {perspectiveName}
                           {isCustom && (
                             <span className="text-xs px-1.5 py-0.5 border border-[var(--border)] rounded opacity-60">Custom</span>
@@ -520,24 +555,24 @@ export default function AnalysisPage({ params }: { params: Promise<{ id: string 
                     </div>
                     <button
                       onClick={() => handleCopy(perspectiveId, resultText)}
-                      className="px-3 py-1.5 border border-[var(--border)] rounded-md text-xs flex items-center gap-2 hover:opacity-60 transition"
+                      className="px-2 md:px-3 py-1 md:py-1.5 border border-[var(--border)] rounded-md text-xs flex items-center gap-1 md:gap-2 hover:opacity-60 transition"
                     >
                       {copiedId === perspectiveId ? (
                         <>
                           <CheckIcon size={12} />
-                          <span>Copied</span>
+                          <span className="hidden md:inline">Copied</span>
                         </>
                       ) : (
                         <>
                           <CopyIcon size={12} />
-                          <span>Copy</span>
+                          <span className="hidden md:inline">Copy</span>
                         </>
                       )}
                     </button>
                   </div>
 
                   {/* Content */}
-                  <div className="p-6">
+                  <div className="p-4 md:p-6">
                     {parsedResult ? (
                       renderParsedResult(parsedResult)
                     ) : (
@@ -551,7 +586,7 @@ export default function AnalysisPage({ params }: { params: Promise<{ id: string 
             })}
           </div>
         ) : (
-          <div className="border border-[var(--border)] rounded-md p-6">
+          <div className="border border-[var(--border)] rounded-md p-4 md:p-6">
             <SynthesisView
               perspectives={analysis.perspectives}
               results={analysis.results}
@@ -566,6 +601,19 @@ export default function AnalysisPage({ params }: { params: Promise<{ id: string 
 
       {/* Footer */}
       <Footer className="mt-16" />
+
+      {/* Rename Modal */}
+      <InputModal
+        isOpen={renameModalOpen}
+        onClose={() => setRenameModalOpen(false)}
+        onConfirm={handleRename}
+        title="Rename Analysis"
+        label="Title"
+        placeholder="Enter a new title"
+        initialValue={analysis.title}
+        confirmLabel="Save"
+        loading={saving}
+      />
     </div>
   )
 }
