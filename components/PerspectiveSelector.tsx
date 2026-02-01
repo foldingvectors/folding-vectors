@@ -382,12 +382,9 @@ export function PerspectiveSelector({
             </div>
           )}
 
-          {/* Category description + actions - fixed height: 44px */}
+          {/* Category actions - fixed height: 44px */}
           {!searchQuery && (
-            <div className="h-11 px-4 flex items-center justify-between border-b border-[var(--border)] bg-[var(--bg)]">
-              <span className="text-xs opacity-60">
-                {allCategories[activeCategory as keyof typeof allCategories]?.description}
-              </span>
+            <div className="h-11 px-4 flex items-center justify-end border-b border-[var(--border)] bg-[var(--bg)]">
               <div className="flex gap-2">
                 {activeCategory === 'custom' && isLoggedIn ? (
                   <button

@@ -693,10 +693,10 @@ export default function Home() {
               </p>
               <div className="border-l-4 border-[var(--text)] pl-6 md:pl-8 py-4">
                 <p className="font-bold text-xl md:text-2xl mb-4">
-                  This will not think for you.
+                  If you are looking for frictionless intelligence, think again.
                 </p>
                 <p className="opacity-80 leading-relaxed">
-                  There is no shortcut to expertise and no substitute for judgment. But exposure to perspectives you would not naturally seek sharpens your own thinking. Consider this a sparring partner for your mind. When you make a decision, you will make it with open eyes.
+                  There is no shortcut to expertise and no substitute for judgment. Exposure to perspectives you would not naturally seek sharpens your own thinking. Do not look for an answering machine but a sparring partner for your mind. You still decide. You always will. But you will do it with open eyes.
                 </p>
               </div>
             </div>

@@ -2,6 +2,29 @@
 
 All notable changes to Folding Vectors will be documented in this file.
 
+## [0.3.0] - 2026-02-01
+
+### Added
+- Brutalist homepage design with bold typography and animations
+- Scrolling marquee with perspective names
+- Rename analysis feature from results page and dashboard
+- In-app confirmation modals (replacing browser dialogs)
+- EditIcon component for rename buttons
+
+### Changed
+- Homepage manifesto text updated
+- Feature cards now use text headers (EXPAND, COMPARE, SHARE) instead of numbers
+- PerspectiveSelector completely rewritten with fixed-height layout for smooth UX
+- Removed category descriptions from perspective selector tabs
+- Footer layout improved for mobile responsiveness
+- All buttons now mobile-friendly with proper wrapping
+
+### Fixed
+- PerspectiveSelector vertical height consistency across all category tabs
+- Long unbreakable text in analysis titles now properly wraps
+- PDF/Word export now includes full synthesis quotes
+- Mobile spacing and padding throughout the app
+
 ## [0.2.0] - 2025-01-31
 
 ### Added
