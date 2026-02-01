@@ -11,6 +11,7 @@ import { SynthesisView } from '@/components/SynthesisView'
 import { InputModal } from '@/components/Modal'
 import { exportToPDF, exportToWord, exportSynthesisToPDF, exportSynthesisToWord } from '@/lib/export-utils'
 import { PerspectiveSelector } from '@/components/PerspectiveSelector'
+import { TypewriterRibbon } from '@/components/TypewriterRibbon'
 import { PERSPECTIVES, getPerspectiveById, DEFAULT_PERSPECTIVES } from '@/lib/perspectives'
 
 // eslint-disable-next-line @typescript-eslint/no-explicit-any
@@ -639,99 +640,8 @@ export default function Home() {
           <div className="absolute top-1/2 right-0 w-32 md:w-64 h-1 bg-[var(--text)] transform -translate-y-1/2 hero-line-animate" />
         </div>
 
-        {/* Scrolling marquee */}
-        <div className="border-y-2 border-[var(--border)] py-4 overflow-hidden">
-          <div className="marquee-container">
-            <div className="marquee-content">
-              <span className="text-sm md:text-base font-bold uppercase tracking-widest opacity-60 mx-6">INVESTOR</span>
-              <span className="text-xs opacity-30 mx-4">■</span>
-              <span className="text-sm md:text-base font-bold uppercase tracking-widest opacity-60 mx-6">CUSTOMER</span>
-              <span className="text-xs opacity-30 mx-4">■</span>
-              <span className="text-sm md:text-base font-bold uppercase tracking-widest opacity-60 mx-6">PRAGMATIST</span>
-              <span className="text-xs opacity-30 mx-4">■</span>
-              <span className="text-sm md:text-base font-bold uppercase tracking-widest opacity-60 mx-6">STRATEGIST</span>
-              <span className="text-xs opacity-30 mx-4">■</span>
-              <span className="text-sm md:text-base font-bold uppercase tracking-widest opacity-60 mx-6">COMPETITOR</span>
-              <span className="text-xs opacity-30 mx-4">■</span>
-              <span className="text-sm md:text-base font-bold uppercase tracking-widest opacity-60 mx-6">FUTURIST</span>
-              <span className="text-xs opacity-30 mx-4">■</span>
-              <span className="text-sm md:text-base font-bold uppercase tracking-widest opacity-60 mx-6">SYSTEMS THINKER</span>
-              <span className="text-xs opacity-30 mx-4">■</span>
-              <span className="text-sm md:text-base font-bold uppercase tracking-widest opacity-60 mx-6">HISTORIAN</span>
-              <span className="text-xs opacity-30 mx-4">■</span>
-              <span className="text-sm md:text-base font-bold uppercase tracking-widest opacity-60 mx-6">LEGAL COUNSEL</span>
-              <span className="text-xs opacity-30 mx-4">■</span>
-              <span className="text-sm md:text-base font-bold uppercase tracking-widest opacity-60 mx-6">AUDITOR</span>
-              <span className="text-xs opacity-30 mx-4">■</span>
-              <span className="text-sm md:text-base font-bold uppercase tracking-widest opacity-60 mx-6">ETHICIST</span>
-              <span className="text-xs opacity-30 mx-4">■</span>
-              <span className="text-sm md:text-base font-bold uppercase tracking-widest opacity-60 mx-6">ENVIRONMENTALIST</span>
-              <span className="text-xs opacity-30 mx-4">■</span>
-              <span className="text-sm md:text-base font-bold uppercase tracking-widest opacity-60 mx-6">SECURITY EXPERT</span>
-              <span className="text-xs opacity-30 mx-4">■</span>
-              <span className="text-sm md:text-base font-bold uppercase tracking-widest opacity-60 mx-6">TECHNOLOGIST</span>
-              <span className="text-xs opacity-30 mx-4">■</span>
-              <span className="text-sm md:text-base font-bold uppercase tracking-widest opacity-60 mx-6">DATA SCIENTIST</span>
-              <span className="text-xs opacity-30 mx-4">■</span>
-              <span className="text-sm md:text-base font-bold uppercase tracking-widest opacity-60 mx-6">END-USER SUPPORT</span>
-              <span className="text-xs opacity-30 mx-4">■</span>
-              <span className="text-sm md:text-base font-bold uppercase tracking-widest opacity-60 mx-6">SKEPTIC</span>
-              <span className="text-xs opacity-30 mx-4">■</span>
-              <span className="text-sm md:text-base font-bold uppercase tracking-widest opacity-60 mx-6">CRISIS MANAGER</span>
-              <span className="text-xs opacity-30 mx-4">■</span>
-              <span className="text-sm md:text-base font-bold uppercase tracking-widest opacity-60 mx-6">STORYTELLER</span>
-              <span className="text-xs opacity-30 mx-4">■</span>
-              <span className="text-sm md:text-base font-bold uppercase tracking-widest opacity-60 mx-6">HR / CULTURALIST</span>
-              <span className="text-xs opacity-30 mx-4">■</span>
-              <span className="text-sm md:text-base font-bold uppercase tracking-widest opacity-60 mx-6">GLOBALIST</span>
-              <span className="text-xs opacity-30 mx-4">■</span>
-            </div>
-            <div className="marquee-content" aria-hidden="true">
-              <span className="text-sm md:text-base font-bold uppercase tracking-widest opacity-60 mx-6">INVESTOR</span>
-              <span className="text-xs opacity-30 mx-4">■</span>
-              <span className="text-sm md:text-base font-bold uppercase tracking-widest opacity-60 mx-6">CUSTOMER</span>
-              <span className="text-xs opacity-30 mx-4">■</span>
-              <span className="text-sm md:text-base font-bold uppercase tracking-widest opacity-60 mx-6">PRAGMATIST</span>
-              <span className="text-xs opacity-30 mx-4">■</span>
-              <span className="text-sm md:text-base font-bold uppercase tracking-widest opacity-60 mx-6">STRATEGIST</span>
-              <span className="text-xs opacity-30 mx-4">■</span>
-              <span className="text-sm md:text-base font-bold uppercase tracking-widest opacity-60 mx-6">COMPETITOR</span>
-              <span className="text-xs opacity-30 mx-4">■</span>
-              <span className="text-sm md:text-base font-bold uppercase tracking-widest opacity-60 mx-6">FUTURIST</span>
-              <span className="text-xs opacity-30 mx-4">■</span>
-              <span className="text-sm md:text-base font-bold uppercase tracking-widest opacity-60 mx-6">SYSTEMS THINKER</span>
-              <span className="text-xs opacity-30 mx-4">■</span>
-              <span className="text-sm md:text-base font-bold uppercase tracking-widest opacity-60 mx-6">HISTORIAN</span>
-              <span className="text-xs opacity-30 mx-4">■</span>
-              <span className="text-sm md:text-base font-bold uppercase tracking-widest opacity-60 mx-6">LEGAL COUNSEL</span>
-              <span className="text-xs opacity-30 mx-4">■</span>
-              <span className="text-sm md:text-base font-bold uppercase tracking-widest opacity-60 mx-6">AUDITOR</span>
-              <span className="text-xs opacity-30 mx-4">■</span>
-              <span className="text-sm md:text-base font-bold uppercase tracking-widest opacity-60 mx-6">ETHICIST</span>
-              <span className="text-xs opacity-30 mx-4">■</span>
-              <span className="text-sm md:text-base font-bold uppercase tracking-widest opacity-60 mx-6">ENVIRONMENTALIST</span>
-              <span className="text-xs opacity-30 mx-4">■</span>
-              <span className="text-sm md:text-base font-bold uppercase tracking-widest opacity-60 mx-6">SECURITY EXPERT</span>
-              <span className="text-xs opacity-30 mx-4">■</span>
-              <span className="text-sm md:text-base font-bold uppercase tracking-widest opacity-60 mx-6">TECHNOLOGIST</span>
-              <span className="text-xs opacity-30 mx-4">■</span>
-              <span className="text-sm md:text-base font-bold uppercase tracking-widest opacity-60 mx-6">DATA SCIENTIST</span>
-              <span className="text-xs opacity-30 mx-4">■</span>
-              <span className="text-sm md:text-base font-bold uppercase tracking-widest opacity-60 mx-6">END-USER SUPPORT</span>
-              <span className="text-xs opacity-30 mx-4">■</span>
-              <span className="text-sm md:text-base font-bold uppercase tracking-widest opacity-60 mx-6">SKEPTIC</span>
-              <span className="text-xs opacity-30 mx-4">■</span>
-              <span className="text-sm md:text-base font-bold uppercase tracking-widest opacity-60 mx-6">CRISIS MANAGER</span>
-              <span className="text-xs opacity-30 mx-4">■</span>
-              <span className="text-sm md:text-base font-bold uppercase tracking-widest opacity-60 mx-6">STORYTELLER</span>
-              <span className="text-xs opacity-30 mx-4">■</span>
-              <span className="text-sm md:text-base font-bold uppercase tracking-widest opacity-60 mx-6">HR / CULTURALIST</span>
-              <span className="text-xs opacity-30 mx-4">■</span>
-              <span className="text-sm md:text-base font-bold uppercase tracking-widest opacity-60 mx-6">GLOBALIST</span>
-              <span className="text-xs opacity-30 mx-4">■</span>
-            </div>
-          </div>
-        </div>
+        {/* Typewriter ribbon */}
+        <TypewriterRibbon />
 
         {/* Manifesto Section */}
         <div className="px-4 md:px-8 py-16 md:py-24">
