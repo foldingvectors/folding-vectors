@@ -339,6 +339,18 @@ export function PerspectiveSelector({
             >
               <span className="opacity-60">{CATEGORY_ICONS[perspective.category]}</span>
               <span>{perspective.name}</span>
+              {selected.length > 1 && (
+                <button
+                  onClick={(e) => {
+                    e.stopPropagation()
+                    togglePerspective(perspective.id)
+                  }}
+                  className="ml-1 opacity-60 hover:opacity-100 transition"
+                  aria-label={`Remove ${perspective.name}`}
+                >
+                  ×
+                </button>
+              )}
             </div>
           ))}
           {selected.length === 0 && (
