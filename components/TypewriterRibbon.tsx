@@ -263,15 +263,15 @@ export function TypewriterRibbon() {
     <div className="border-y-2 border-[var(--border)] py-6 md:py-8 bg-[var(--bg)]">
       <div className="max-w-5xl mx-auto px-4 md:px-8">
         <div className="text-center">
-          {/* Min height container with flexible sizing for mobile */}
-          <div className="min-h-[5em] md:min-h-[3.5em] flex flex-col justify-center text-base md:text-2xl lg:text-3xl font-light tracking-tight leading-relaxed">
-            <div className="min-h-[1.5em] py-1">
+          {/* Fixed height: 4 lines on mobile, 2 lines on desktop */}
+          <div className="h-[6em] md:h-[3.5em] flex flex-col justify-center text-base md:text-2xl lg:text-3xl font-light tracking-tight leading-relaxed">
+            <div>
               {renderWithHighlights(displayedLine1)}
               {showCursorLine1 && (
                 <span className="inline-block w-[2px] h-[1em] bg-[var(--text)] ml-0.5 align-middle animate-blink" />
               )}
             </div>
-            <div className="min-h-[1.5em] py-1">
+            <div>
               {renderWithHighlights(displayedLine2)}
               {showCursorLine2 && (
                 <span className="inline-block w-[2px] h-[1em] bg-[var(--text)] ml-0.5 align-middle animate-blink" />
