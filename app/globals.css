@@ -367,9 +367,12 @@ body {
 /* Glitch text effect */
 .glitch-active {
   animation: glitchShake 0.1s linear infinite;
-  text-shadow:
-    2px 0 var(--text),
-    -2px 0 var(--text);
+}
+
+/* Glitch effect specifically for text-stroke elements */
+.text-stroke.glitch-active {
+  -webkit-text-stroke: 2px var(--text);
+  color: transparent;
 }
 
 @keyframes glitchShake {
