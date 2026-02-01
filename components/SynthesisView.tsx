@@ -75,7 +75,7 @@ function calculateScore(text: string): number {
   // Neutral
   const neutral = ['mixed', 'balanced', 'moderate', 'depends', 'conditional']
   // Moderate negative
-  const negative = ['concern', 'risk', 'caution', 'careful', 'uncertain', 'questionable']
+  const negative = ['concern', 'risk', 'caution', 'careful', 'uncertain', 'questionable', 'deficiencies']
   // Strong negative
   const strongNegative = ['avoid', 'reject', 'significant risk', 'major concern', 'not recommend', 'serious issues']
 
