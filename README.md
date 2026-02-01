@@ -4,9 +4,15 @@ Multi-perspective document analysis. Fold complexity into clarity.
 
 ## What is Folding Vectors?
 
-Folding Vectors analyzes documents from multiple professional perspectives simultaneously. Upload a contract, investment memo, or strategy document and receive analysis from viewpoints you might otherwise ignore: the skeptic, the ethicist, the adversary, the regulator.
+It feels good to be right. We gravitate toward perspectives that confirm what we already believe. But when stakes are high, confirmation bias becomes expensive.
 
-If you are looking for frictionless intelligence, think again. There is no shortcut to expertise and no substitute for judgment. Exposure to perspectives you would not naturally seek sharpens your own thinking. Do not look for an answering machine but a sparring partner for your mind. You still decide. You always will. But you will do it with open eyes.
+Every contract has clauses that favor the other party. Every investment has risks the pitch deck glosses over. Every strategy has blind spots the advocates cannot see.
+
+Folding Vectors forces confrontation with contrarian views. Upload a document, select perspectives that challenge your assumptions, and receive analysis from voices you might otherwise ignore.
+
+If you are looking for frictionless intelligence, think again.
+
+There is no shortcut to expertise and no substitute for judgment. Do not look for an answering machine but a sparring partner for your mind. You still decide. You always will. But you will do it with open eyes.
 
 ## Features
 
