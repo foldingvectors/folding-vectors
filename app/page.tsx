@@ -696,7 +696,7 @@ export default function Home() {
                   If you are looking for frictionless intelligence, think again.
                 </p>
                 <p className="opacity-80 leading-relaxed">
-                  There is no shortcut to expertise and no substitute for judgment. Exposure to perspectives you would not naturally seek sharpens your own thinking. Do not look for an answering machine but a sparring partner for your mind. You still decide. You always will. But you will do it with open eyes.
+                  There is no shortcut to expertise and no substitute for judgment. Do not look for an answering machine but a sparring partner for your mind. You still decide. You always will. But you will do it with open eyes.
                 </p>
               </div>
             </div>
