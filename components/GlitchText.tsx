@@ -7,26 +7,24 @@ interface GlitchTextProps {
   className?: string
 }
 
-// Multi-language glitch characters
+// Multi-language glitch characters - selected for consistent width/height
 const GLITCH_CHARS = [
-  // Latin & symbols
-  ...'ABCDEFGHIJKLMNOPQRSTUVWXYZ0123456789@#$%&*!?<>[]{}|/\\~'.split(''),
-  // Japanese Katakana
-  ...'アイウエオカキクケコサシスセソタチツテトナニヌネノハヒフヘホマミムメモヤユヨラリルレロワヲン'.split(''),
-  // Japanese Hiragana
-  ...'あいうえおかきくけこさしすせそたちつてとなにぬねのはひふへほまみむめもやゆよらりるれろわをん'.split(''),
-  // Korean Hangul
-  ...'가나다라마바사아자차카타파하갸냐댜랴먀뱌샤야쟈챠캬탸퍄햐'.split(''),
-  // Chinese characters
-  ...'龍鳳虎豹風雷電雲山水火土金木天地日月星辰'.split(''),
-  // Cyrillic
-  ...'АБВГДЕЁЖЗИЙКЛМНОПРСТУФХЦЧШЩЪЫЬЭЮЯ'.split(''),
-  // Greek
-  ...'ΑΒΓΔΕΖΗΘΙΚΛΜΝΞΟΠΡΣΤΥΦΧΨΩ'.split(''),
-  // Arabic numerals/symbols style
-  ...'٠١٢٣٤٥٦٧٨٩'.split(''),
-  // Box drawing & blocks
-  ...'░▒▓█▄▀■□▪▫'.split(''),
+  // Latin uppercase (consistent width)
+  ...'ABCDEFGHKLMNPRSTXYZ'.split(''),
+  // Numbers
+  ...'0123456789'.split(''),
+  // Symbols (similar width to letters)
+  ...'@#$%&*?□■'.split(''),
+  // Japanese Katakana (full-width, consistent)
+  ...'アイウエオカキクケコタチツテトナニヌネノ'.split(''),
+  // Korean Hangul (consistent square shape)
+  ...'가나다라마바사아자차카타파하'.split(''),
+  // Chinese (square characters)
+  ...'天地日月火水木金土山'.split(''),
+  // Cyrillic (similar to Latin width)
+  ...'АБВГДЕЖЗКЛМНПРСТ'.split(''),
+  // Greek (similar to Latin width)
+  ...'ΑΒΓΔΕΖΗΘΚΛΜΝΞΠΡΣ'.split(''),
 ]
 
 export function GlitchText({ text, className = '' }: GlitchTextProps) {
