@@ -7,25 +7,8 @@ interface GlitchTextProps {
   className?: string
 }
 
-// Multi-language glitch characters - selected for consistent width/height
-const GLITCH_CHARS = [
-  // Latin uppercase (consistent width)
-  ...'ABCDEFGHKLMNPRSTXYZ'.split(''),
-  // Numbers
-  ...'0123456789'.split(''),
-  // Symbols (similar width to letters)
-  ...'@#$%&*?□■'.split(''),
-  // Japanese Katakana (full-width, consistent)
-  ...'アイウエオカキクケコタチツテトナニヌネノ'.split(''),
-  // Korean Hangul (consistent square shape)
-  ...'가나다라마바사아자차카타파하'.split(''),
-  // Chinese (square characters)
-  ...'天地日月火水木金土山'.split(''),
-  // Cyrillic (similar to Latin width)
-  ...'АБВГДЕЖЗКЛМНПРСТ'.split(''),
-  // Greek (similar to Latin width)
-  ...'ΑΒΓΔΕΖΗΘΚΛΜΝΞΠΡΣ'.split(''),
-]
+// Glitch characters - Latin only to prevent width issues
+const GLITCH_CHARS = 'ABCDEFGHKLMNPRSTXYZ0123456789'.split('')
 
 export function GlitchText({ text, className = '' }: GlitchTextProps) {
   const [displayText, setDisplayText] = useState(text)
