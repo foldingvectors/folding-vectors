@@ -1,6 +1,6 @@
 'use client'
 
-import { useState, useEffect, useCallback } from 'react'
+import { useState, useEffect, useCallback, type ReactElement } from 'react'
 
 const PERSPECTIVES = [
   'Investor',
@@ -208,7 +208,7 @@ export function TypewriterRibbon() {
 
   // Helper to render text with bold perspectives and document
   const renderWithHighlights = (text: string) => {
-    const parts: JSX.Element[] = []
+    const parts: ReactElement[] = []
     let remaining = text
     let key = 0
 
