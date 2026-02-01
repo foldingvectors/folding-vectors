@@ -375,6 +375,12 @@ body {
   color: transparent;
 }
 
+@media (max-width: 768px) {
+  .text-stroke.glitch-active {
+    -webkit-text-stroke: 1px var(--text);
+  }
+}
+
 @keyframes glitchShake {
   0%, 100% { transform: translate(0); }
   20% { transform: translate(-2px, 1px); }
