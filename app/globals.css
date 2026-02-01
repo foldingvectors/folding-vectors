@@ -364,6 +364,22 @@ body {
   50% { opacity: 0; }
 }
 
+/* Glitch text effect */
+.glitch-active {
+  animation: glitchShake 0.1s linear infinite;
+  text-shadow:
+    2px 0 var(--text),
+    -2px 0 var(--text);
+}
+
+@keyframes glitchShake {
+  0%, 100% { transform: translate(0); }
+  20% { transform: translate(-2px, 1px); }
+  40% { transform: translate(2px, -1px); }
+  60% { transform: translate(-1px, 2px); }
+  80% { transform: translate(1px, -2px); }
+}
+
 /* Manifesto line animations */
 .manifesto-line {
   opacity: 0;

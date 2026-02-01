@@ -168,8 +168,14 @@ export function TypewriterRibbon() {
       case 'deleting-line2':
         if (displayedLine2.length > 0) {
           timeout = setTimeout(() => {
-            setDisplayedLine2(displayedLine2.slice(0, -1))
-          }, 20)
+            // Delete word by word (find last space or delete all if no space)
+            const lastSpace = displayedLine2.lastIndexOf(' ')
+            if (lastSpace > 0) {
+              setDisplayedLine2(displayedLine2.slice(0, lastSpace))
+            } else {
+              setDisplayedLine2('')
+            }
+          }, 60)
         } else {
           timeout = setTimeout(() => {
             setPhase('deleting-line1')
@@ -180,8 +186,14 @@ export function TypewriterRibbon() {
       case 'deleting-line1':
         if (displayedLine1.length > 0) {
           timeout = setTimeout(() => {
-            setDisplayedLine1(displayedLine1.slice(0, -1))
-          }, 20)
+            // Delete word by word (find last space or delete all if no space)
+            const lastSpace = displayedLine1.lastIndexOf(' ')
+            if (lastSpace > 0) {
+              setDisplayedLine1(displayedLine1.slice(0, lastSpace))
+            } else {
+              setDisplayedLine1('')
+            }
+          }, 60)
         } else {
           timeout = setTimeout(() => {
             setQuestion(generateQuestion())
@@ -251,14 +263,15 @@ export function TypewriterRibbon() {
     <div className="border-y-2 border-[var(--border)] py-6 md:py-8 bg-[var(--bg)]">
       <div className="max-w-5xl mx-auto px-4 md:px-8">
         <div className="text-center">
-          <div className="text-lg md:text-2xl lg:text-3xl font-light tracking-tight leading-relaxed">
-            <div className="min-h-[1.5em]">
+          {/* Fixed height container: 2 lines of text at each breakpoint */}
+          <div className="h-[4em] md:h-[3.5em] flex flex-col justify-center text-lg md:text-2xl lg:text-3xl font-light tracking-tight leading-relaxed">
+            <div className="h-[1.5em]">
               {renderWithHighlights(displayedLine1)}
               {showCursorLine1 && (
                 <span className="inline-block w-[2px] h-[1em] bg-[var(--text)] ml-0.5 align-middle animate-blink" />
               )}
             </div>
-            <div className="min-h-[1.5em]">
+            <div className="h-[1.5em]">
               {renderWithHighlights(displayedLine2)}
               {showCursorLine2 && (
                 <span className="inline-block w-[2px] h-[1em] bg-[var(--text)] ml-0.5 align-middle animate-blink" />

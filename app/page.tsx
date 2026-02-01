@@ -12,6 +12,7 @@ import { InputModal } from '@/components/Modal'
 import { exportToPDF, exportToWord, exportSynthesisToPDF, exportSynthesisToWord } from '@/lib/export-utils'
 import { PerspectiveSelector } from '@/components/PerspectiveSelector'
 import { TypewriterRibbon } from '@/components/TypewriterRibbon'
+import { GlitchText } from '@/components/GlitchText'
 import { PERSPECTIVES, getPerspectiveById, DEFAULT_PERSPECTIVES } from '@/lib/perspectives'
 
 // eslint-disable-next-line @typescript-eslint/no-explicit-any
@@ -624,7 +625,7 @@ export default function Home() {
             <div className="hero-text-animate">
               <h2 className="text-5xl md:text-8xl lg:text-9xl font-black tracking-tighter leading-[0.85] mb-8">
                 FOLD<br />
-                <span className="text-stroke">COMPLEXITY</span><br />
+                <GlitchText text="COMPLEXITY" className="text-stroke" /><br />
                 INTO CLARITY
               </h2>
             </div>
