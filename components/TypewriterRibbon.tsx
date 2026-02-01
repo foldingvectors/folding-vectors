@@ -1,6 +1,6 @@
 'use client'
 
-import { useState, useEffect } from 'react'
+import { useState, useEffect, useCallback } from 'react'
 
 const PERSPECTIVES = [
   'Investor',
@@ -53,101 +53,216 @@ const DOCUMENTS = [
   'white paper',
 ]
 
+// Question templates with placeholders: {p1} = perspective 1, {p2} = perspective 2, {doc} = document
+const QUESTION_TEMPLATES = [
+  { line1: 'Where are the {p1} and {p2}', line2: 'disagreeing on your {doc}?' },
+  { line1: 'How are the {p1} and {p2}', line2: 'aligned on your {doc}?' },
+  { line1: 'What would the {p1} and {p2}', line2: 'both miss in your {doc}?' },
+  { line1: 'Where do the {p1} and {p2}', line2: 'clash on your {doc}?' },
+  { line1: 'How would the {p1} challenge the {p2}', line2: 'on your {doc}?' },
+  { line1: 'What tensions exist between the {p1} and {p2}', line2: 'reviewing your {doc}?' },
+  { line1: 'Where would the {p1} and {p2}', line2: 'find common ground on your {doc}?' },
+  { line1: 'How might the {p1} and {p2}', line2: 'interpret your {doc} differently?' },
+  { line1: 'What would the {p1} see that the {p2}', line2: 'overlooks in your {doc}?' },
+  { line1: 'Where are the {p1} and {p2}', line2: 'contradicting each other on your {doc}?' },
+  { line1: 'What risks would the {p1} and {p2}', line2: 'both flag in your {doc}?' },
+  { line1: 'How do the {p1} and {p2}', line2: 'prioritize differently in your {doc}?' },
+  { line1: 'What blind spots do the {p1} and {p2}', line2: 'share about your {doc}?' },
+  { line1: 'Where would the {p1} push back on the {p2}', line2: 'regarding your {doc}?' },
+  { line1: 'What questions would the {p1} and {p2}', line2: 'both ask about your {doc}?' },
+  { line1: 'How do the {p1} and {p2}', line2: 'weigh the tradeoffs in your {doc}?' },
+  { line1: 'What concerns unite the {p1} and {p2}', line2: 'about your {doc}?' },
+  { line1: 'Where would the {p1} and {p2}', line2: 'demand changes to your {doc}?' },
+  { line1: 'How might the {p1} and {p2}', line2: 'negotiate your {doc} differently?' },
+  { line1: 'What would reconcile the {p1} and {p2}', line2: 'on your {doc}?' },
+]
+
+// Get two different random perspectives
+const getRandomPerspectives = (): [string, string] => {
+  const idx1 = Math.floor(Math.random() * PERSPECTIVES.length)
+  let idx2 = Math.floor(Math.random() * PERSPECTIVES.length)
+  while (idx2 === idx1) {
+    idx2 = Math.floor(Math.random() * PERSPECTIVES.length)
+  }
+  return [PERSPECTIVES[idx1], PERSPECTIVES[idx2]]
+}
+
+const getRandomDocument = (): string => {
+  return DOCUMENTS[Math.floor(Math.random() * DOCUMENTS.length)]
+}
+
+const getRandomTemplate = (): { line1: string; line2: string } => {
+  return QUESTION_TEMPLATES[Math.floor(Math.random() * QUESTION_TEMPLATES.length)]
+}
+
+interface QuestionState {
+  template: { line1: string; line2: string }
+  perspective1: string
+  perspective2: string
+  document: string
+}
+
+const generateQuestion = (): QuestionState => {
+  const [p1, p2] = getRandomPerspectives()
+  return {
+    template: getRandomTemplate(),
+    perspective1: p1,
+    perspective2: p2,
+    document: getRandomDocument(),
+  }
+}
+
+type Phase = 'typing-line1' | 'typing-line2' | 'pause' | 'deleting-line2' | 'deleting-line1'
+
 export function TypewriterRibbon() {
-  const [perspectiveIndex, setPerspectiveIndex] = useState(0)
-  const [documentIndex, setDocumentIndex] = useState(0)
-  const [displayedPerspective, setDisplayedPerspective] = useState('')
-  const [displayedDocument, setDisplayedDocument] = useState('')
-  const [isTypingPerspective, setIsTypingPerspective] = useState(true)
-  const [isTypingDocument, setIsTypingDocument] = useState(false)
-  const [phase, setPhase] = useState<'typing-perspective' | 'typing-document' | 'pause' | 'deleting-document' | 'deleting-perspective'>('typing-perspective')
+  const [question, setQuestion] = useState<QuestionState>(() => generateQuestion())
+  const [displayedLine1, setDisplayedLine1] = useState('')
+  const [displayedLine2, setDisplayedLine2] = useState('')
+  const [phase, setPhase] = useState<Phase>('typing-line1')
+
+  // Build the full lines with substitutions
+  const fullLine1 = question.template.line1
+    .replace('{p1}', question.perspective1)
+    .replace('{p2}', question.perspective2)
+    .replace('{doc}', question.document)
+
+  const fullLine2 = question.template.line2
+    .replace('{p1}', question.perspective1)
+    .replace('{p2}', question.perspective2)
+    .replace('{doc}', question.document)
 
   useEffect(() => {
-    const perspective = PERSPECTIVES[perspectiveIndex]
-    const document = DOCUMENTS[documentIndex]
-
     let timeout: NodeJS.Timeout
 
     switch (phase) {
-      case 'typing-perspective':
-        if (displayedPerspective.length < perspective.length) {
+      case 'typing-line1':
+        if (displayedLine1.length < fullLine1.length) {
           timeout = setTimeout(() => {
-            setDisplayedPerspective(perspective.slice(0, displayedPerspective.length + 1))
-          }, 60)
+            setDisplayedLine1(fullLine1.slice(0, displayedLine1.length + 1))
+          }, 45)
         } else {
           timeout = setTimeout(() => {
-            setPhase('typing-document')
-          }, 200)
+            setPhase('typing-line2')
+          }, 150)
         }
         break
 
-      case 'typing-document':
-        if (displayedDocument.length < document.length) {
+      case 'typing-line2':
+        if (displayedLine2.length < fullLine2.length) {
           timeout = setTimeout(() => {
-            setDisplayedDocument(document.slice(0, displayedDocument.length + 1))
-          }, 50)
+            setDisplayedLine2(fullLine2.slice(0, displayedLine2.length + 1))
+          }, 45)
         } else {
           timeout = setTimeout(() => {
             setPhase('pause')
-          }, 2000)
+          }, 2500)
         }
         break
 
       case 'pause':
         timeout = setTimeout(() => {
-          setPhase('deleting-document')
+          setPhase('deleting-line2')
         }, 100)
         break
 
-      case 'deleting-document':
-        if (displayedDocument.length > 0) {
+      case 'deleting-line2':
+        if (displayedLine2.length > 0) {
           timeout = setTimeout(() => {
-            setDisplayedDocument(displayedDocument.slice(0, -1))
-          }, 30)
+            setDisplayedLine2(displayedLine2.slice(0, -1))
+          }, 20)
         } else {
           timeout = setTimeout(() => {
-            setPhase('deleting-perspective')
-            setDocumentIndex((documentIndex + 1) % DOCUMENTS.length)
-          }, 100)
+            setPhase('deleting-line1')
+          }, 80)
         }
         break
 
-      case 'deleting-perspective':
-        if (displayedPerspective.length > 0) {
+      case 'deleting-line1':
+        if (displayedLine1.length > 0) {
           timeout = setTimeout(() => {
-            setDisplayedPerspective(displayedPerspective.slice(0, -1))
-          }, 40)
+            setDisplayedLine1(displayedLine1.slice(0, -1))
+          }, 20)
         } else {
           timeout = setTimeout(() => {
-            setPerspectiveIndex((perspectiveIndex + 1) % PERSPECTIVES.length)
-            setPhase('typing-perspective')
-          }, 200)
+            setQuestion(generateQuestion())
+            setPhase('typing-line1')
+          }, 300)
         }
         break
     }
 
     return () => clearTimeout(timeout)
-  }, [phase, displayedPerspective, displayedDocument, perspectiveIndex, documentIndex])
+  }, [phase, displayedLine1, displayedLine2, fullLine1, fullLine2])
+
+  // Helper to render text with bold perspectives and document
+  const renderWithHighlights = (text: string) => {
+    const parts: JSX.Element[] = []
+    let remaining = text
+    let key = 0
+
+    const highlights = [question.perspective1, question.perspective2, question.document]
+
+    while (remaining.length > 0) {
+      let foundMatch = false
+
+      for (const highlight of highlights) {
+        if (remaining.startsWith(highlight)) {
+          parts.push(
+            <span key={key++} className="font-black">
+              {highlight}
+            </span>
+          )
+          remaining = remaining.slice(highlight.length)
+          foundMatch = true
+          break
+        }
+      }
+
+      if (!foundMatch) {
+        // Find the next highlight position
+        let nextHighlightPos = remaining.length
+        for (const highlight of highlights) {
+          const pos = remaining.indexOf(highlight)
+          if (pos !== -1 && pos < nextHighlightPos) {
+            nextHighlightPos = pos
+          }
+        }
+
+        // Add the text before the next highlight
+        const normalText = remaining.slice(0, nextHighlightPos)
+        if (normalText) {
+          parts.push(
+            <span key={key++} className="opacity-50">
+              {normalText}
+            </span>
+          )
+        }
+        remaining = remaining.slice(nextHighlightPos)
+      }
+    }
+
+    return parts
+  }
+
+  const showCursorLine1 = phase === 'typing-line1' || phase === 'deleting-line1'
+  const showCursorLine2 = phase === 'typing-line2' || phase === 'deleting-line2'
 
   return (
     <div className="border-y-2 border-[var(--border)] py-6 md:py-8 bg-[var(--bg)]">
       <div className="max-w-5xl mx-auto px-4 md:px-8">
         <div className="text-center">
-          <div className="text-lg md:text-2xl lg:text-3xl font-light tracking-tight">
-            <div>
-              <span className="opacity-50">What is the </span>
-              <span className="font-black text-[var(--text)] inline-block min-w-[140px] md:min-w-[200px] text-left">
-                {displayedPerspective}
-                <span className={`inline-block w-[2px] h-[1em] bg-[var(--text)] ml-0.5 align-middle ${phase.includes('perspective') ? 'animate-blink' : 'opacity-0'}`} />
-              </span>
+          <div className="text-lg md:text-2xl lg:text-3xl font-light tracking-tight leading-relaxed">
+            <div className="min-h-[1.5em]">
+              {renderWithHighlights(displayedLine1)}
+              {showCursorLine1 && (
+                <span className="inline-block w-[2px] h-[1em] bg-[var(--text)] ml-0.5 align-middle animate-blink" />
+              )}
             </div>
-            <div>
-              <span className="opacity-50">thinking about your </span>
-              <span className="font-black text-[var(--text)] inline-block min-w-[120px] md:min-w-[180px] text-left">
-                {displayedDocument}
-                <span className={`inline-block w-[2px] h-[1em] bg-[var(--text)] ml-0.5 align-middle ${phase.includes('document') ? 'animate-blink' : 'opacity-0'}`} />
-              </span>
-              <span className="opacity-50">?</span>
+            <div className="min-h-[1.5em]">
+              {renderWithHighlights(displayedLine2)}
+              {showCursorLine2 && (
+                <span className="inline-block w-[2px] h-[1em] bg-[var(--text)] ml-0.5 align-middle animate-blink" />
+              )}
             </div>
           </div>
         </div>
