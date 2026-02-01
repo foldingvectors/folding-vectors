@@ -134,17 +134,21 @@ export function TypewriterRibbon() {
       <div className="max-w-5xl mx-auto px-4 md:px-8">
         <div className="text-center">
           <div className="text-lg md:text-2xl lg:text-3xl font-light tracking-tight">
-            <span className="opacity-50">What is the </span>
-            <span className="font-black text-[var(--text)] inline-block min-w-[140px] md:min-w-[200px] text-left">
-              {displayedPerspective}
-              <span className={`inline-block w-[2px] h-[1em] bg-[var(--text)] ml-0.5 align-middle ${phase.includes('perspective') ? 'animate-blink' : 'opacity-0'}`} />
-            </span>
-            <span className="opacity-50"> thinking about your </span>
-            <span className="font-black text-[var(--text)] inline-block min-w-[120px] md:min-w-[180px] text-left">
-              {displayedDocument}
-              <span className={`inline-block w-[2px] h-[1em] bg-[var(--text)] ml-0.5 align-middle ${phase.includes('document') ? 'animate-blink' : 'opacity-0'}`} />
-            </span>
-            <span className="opacity-50">?</span>
+            <div>
+              <span className="opacity-50">What is the </span>
+              <span className="font-black text-[var(--text)] inline-block min-w-[140px] md:min-w-[200px] text-left">
+                {displayedPerspective}
+                <span className={`inline-block w-[2px] h-[1em] bg-[var(--text)] ml-0.5 align-middle ${phase.includes('perspective') ? 'animate-blink' : 'opacity-0'}`} />
+              </span>
+            </div>
+            <div>
+              <span className="opacity-50">thinking about your </span>
+              <span className="font-black text-[var(--text)] inline-block min-w-[120px] md:min-w-[180px] text-left">
+                {displayedDocument}
+                <span className={`inline-block w-[2px] h-[1em] bg-[var(--text)] ml-0.5 align-middle ${phase.includes('document') ? 'animate-blink' : 'opacity-0'}`} />
+              </span>
+              <span className="opacity-50">?</span>
+            </div>
           </div>
         </div>
       </div>
