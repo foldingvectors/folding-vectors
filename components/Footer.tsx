@@ -88,7 +88,9 @@ export function Footer({ className = '' }: FooterProps) {
         {/* Disclaimer */}
         <div className="mt-4 md:mt-6 text-xs opacity-40 text-center">
           Folding Vectors uses AI to generate analyses. Results are not professional advice.
-          Always consult qualified professionals for important decisions. But come prepared.
+          Always consult qualified professionals for important decisions.
+          <br />
+          But come prepared.
         </div>
       </div>
     </footer>
