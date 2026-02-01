@@ -739,13 +739,13 @@ export default function Home() {
             <h3 className="text-xs uppercase tracking-[0.3em] opacity-40 mb-8 font-bold">Why Folding Vectors</h3>
             <div className="space-y-6 md:space-y-8 text-lg md:text-xl leading-relaxed">
               <p className="manifesto-line">
-                We gravitate toward perspectives that confirm what we already believe. It feels good to be right. But when stakes are high, <span className="font-bold">confirmation bias becomes expensive.</span>
+                It feels good to be right. We gravitate toward perspectives that confirm what we already believe. But when stakes are high, <span className="font-bold">confirmation bias becomes expensive.</span>
               </p>
               <p className="manifesto-line">
                 Every contract has clauses that favor the other party. Every investment has risks the pitch deck glosses over. Every strategy has blind spots the advocates cannot see.
               </p>
               <p className="manifesto-line">
-                Folding Vectors forces confrontation with contrarian views. Upload a document, select perspectives that challenge your assumptions, and receive analysis from voices you might otherwise ignore: <span className="font-bold">the skeptic, the ethicist, the adversary, the regulator.</span>
+                Folding Vectors forces confrontation with contrarian views. Upload a document, select perspectives that challenge your assumptions, and receive analysis from voices you might otherwise ignore.
               </p>
               <div className="border-l-4 border-[var(--text)] pl-6 md:pl-8 py-4">
                 <p className="font-bold text-xl md:text-2xl mb-4">

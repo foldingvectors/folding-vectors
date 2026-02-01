@@ -1,6 +1,6 @@
 'use client'
 
-import { useState } from 'react'
+import { useState, useRef, useEffect } from 'react'
 import { PERSPECTIVES, PERSPECTIVE_CATEGORIES } from '@/lib/perspectives'
 import { CheckIcon } from '@/components/icons'
 import { ConfirmModal } from '@/components/Modal'
@@ -52,6 +52,19 @@ export function PerspectiveSelector({
   const [deletingCustomId, setDeletingCustomId] = useState<string | null>(null)
   const [deleteModalOpen, setDeleteModalOpen] = useState(false)
   const [deleteTargetId, setDeleteTargetId] = useState<string | null>(null)
+
+  // Ref for the tabs container to enable scrolling
+  const tabsContainerRef = useRef<HTMLDivElement>(null)
+
+  // Scroll active tab into view when it changes
+  useEffect(() => {
+    if (tabsContainerRef.current && isOpen && !searchQuery) {
+      const activeTab = tabsContainerRef.current.querySelector(`[data-category="${activeCategory}"]`) as HTMLElement
+      if (activeTab) {
+        activeTab.scrollIntoView({ behavior: 'smooth', block: 'nearest', inline: 'center' })
+      }
+    }
+  }, [activeCategory, isOpen, searchQuery])
 
   const togglePerspective = (id: string) => {
     if (selected.includes(id)) {
@@ -350,7 +363,7 @@ export function PerspectiveSelector({
 
           {/* Category tabs - fixed height: 48px */}
           {!searchQuery && (
-            <div className="h-12 flex items-stretch border-b border-[var(--border)] overflow-x-auto">
+            <div ref={tabsContainerRef} className="h-12 flex items-stretch border-b border-[var(--border)] overflow-x-auto">
               {Object.entries(allCategories).map(([key, category]) => {
                 const selectedCount = key === 'custom'
                   ? selected.filter(id => id.startsWith('custom:')).length
@@ -363,6 +376,7 @@ export function PerspectiveSelector({
                 return (
                   <button
                     key={key}
+                    data-category={key}
                     onClick={() => setActiveCategory(key)}
                     className={`
                       flex-shrink-0 px-4 h-full text-sm transition flex items-center gap-2
